@@ -1,0 +1,18 @@
+venv/
+.venv/
+env/
+ENV/
+
+__pycache__/
+*.py[cod]
+
+*.pkl
+*.zip
+events.out.tfevents.*
+monitor.csv
+progress.csv
+time.txt
+
+# Ignore large training replay buffers
+DRL_Robot_Manipulator/Data/Training/Environment_Default/DDPG/YASKAWA_GP7/run/*.pkl
+

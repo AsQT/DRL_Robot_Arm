@@ -1,0 +1,95 @@
+# =============================================================================
+# DRL Cartesian Path Planning Training — Default Configuration
+# =============================================================================
+# All workspace, reward, training, and visualization hyperparameters are defined here.
+# Training/evaluation scripts read this file; do NOT hardcode values in .py files.
+# =============================================================================
+
+workspace:
+  x_min: -0.2
+  x_max:  0.6
+  y_min: -0.7
+  y_max:  0.2
+  z_min:  0.0
+  z_max:  0.6
+
+# Each normalised action step moves the point-agent by this many metres.
+action_step: 0.01
+
+# Success threshold: terminated=True when Euclidean distance < target_threshold.
+target_threshold: 0.01
+
+# Maximum number of step() calls before truncated=True.
+max_steps: 200
+
+# ---------------------------------------------------------------------------
+# Reward function parameters
+# ---------------------------------------------------------------------------
+reward:
+  # Reward for making progress toward the target (positive, encourages movement).
+  progress_scale: 10.0
+
+  # Penalty proportional to current distance to target (shaped reward).
+  distance_scale: 1.0
+
+  # Small penalty applied every step (encourages efficiency).
+  step_penalty: 0.01
+
+  # Penalty proportional to path length taken this step.
+  path_length_scale: 0.1
+
+  # Bonus awarded when the agent successfully reaches the target.
+  success_bonus: 100.0
+
+  # Penalty applied when the agent collides with an obstacle.
+  collision_penalty: 100.0
+
+  # Penalty applied when the agent leaves the workspace bounds.
+  workspace_penalty: 100.0
+
+# ---------------------------------------------------------------------------
+# Obstacle definition (used in Collision-Free mode)
+# ---------------------------------------------------------------------------
+obstacle:
+  center:       [0.2, -0.25, 0.3]
+  half_extent:  [0.05,  0.05, 0.05]
+
+# ---------------------------------------------------------------------------
+# Optional PyBullet Visualization
+# ---------------------------------------------------------------------------
+# PyBullet is used ONLY for visualising the Cartesian path planning environment.
+# It is NOT a robot simulator. No URDF, no IK, no FK, no joint control.
+# Set enabled: false for headless training (default).
+# ---------------------------------------------------------------------------
+visualization:
+  enabled: false
+
+  # PyBullet physics timestep per step() call.
+  time_step: 0.01
+
+  # Camera settings (PyBullet orbit camera).
+  camera:
+    distance: 1.2
+    yaw: -60
+    pitch: -35
+    target: [0.2, -0.25, 0.25]
+
+  # Ground / table reference plane.
+  show_ground_plane: true
+  ground_z: 0.0
+  ground_size: 1.0
+
+  # Which scene elements to draw.
+  show_workspace: true
+  show_target_region: true
+  show_start_frame: true
+  show_target_frame: true
+  show_agent_frame: true
+  show_obstacle: true
+  show_path: true
+  show_labels: true
+
+  # Visual styling.
+  path_line_width: 4
+  frame_axis_length: 0.05
+  agent_radius: 0.015

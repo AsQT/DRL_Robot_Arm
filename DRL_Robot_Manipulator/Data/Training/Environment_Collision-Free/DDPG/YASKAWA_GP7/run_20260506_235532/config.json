@@ -1,0 +1,34 @@
+{
+    "env_mode": "Collision-Free",
+    "algorithm": "DDPG",
+    "timesteps": 2000000,
+    "run_id": "20260506_235532",
+    "seed": 42,
+    "env_parameters": {
+        "enable_gui": false,
+        "action_step": 0.01,
+        "distance_thresh": 0.03,
+        "max_episode_steps": 500
+    },
+    "reward_settings": {
+        "type": "dense_distance_with_optional_collision_soft_penalty",
+        "default_reward": "-distance",
+        "collision_free_reward": "-(distance + collision_penalty * collision_obj_penalty_threshold)",
+        "collision_penalty_formula": "1 / (1 + distance_to_obstacle)",
+        "collision_obj_penalty_threshold": 0.01,
+        "hard_collision_penalty": -5.0,
+        "hard_failure_penalty": -1.0,
+        "success_bonus": 0.0
+    },
+    "ik_settings": {
+        "use_orientation": true,
+        "ik_position_tolerance": 0.01,
+        "note": "position-only IK (use_orientation=True) \u2014 matches GP7ReachPyBulletEnv.__ik_props"
+    },
+    "replay_buffer": {
+        "saved": true,
+        "path": "replay_buffer.pkl",
+        "note": "DDPG off-policy replay buffer saved for future continue-training runs."
+    },
+    "source_config": "config/env_config.yaml"
+}

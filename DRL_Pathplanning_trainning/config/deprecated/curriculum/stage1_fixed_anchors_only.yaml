@@ -1,0 +1,46 @@
+# =============================================================================
+# DRL Cartesian Path Planning — Stage 1 Fixed Anchors Only
+# =============================================================================
+# Single-stage curriculum: fixed_easy_anchors only.
+# Used for the new simple_distance reward experiment.
+#
+# This config trains Stage 1 in isolation before proceeding to harder stages.
+# =============================================================================
+
+project:
+  name: DRL_Pathplanning_trainning
+  robot_name: FRAME_ONLY
+  unit: meter
+
+# ---------------------------------------------------------------------------
+# Curriculum configuration
+# ---------------------------------------------------------------------------
+curriculum:
+  enabled: true
+
+  # Anchor box (20% inner margin on workspace)
+  anchor_box:
+    min: [-0.06, -0.64, 0.08]
+    max: [ 0.36, -0.16, 0.26]
+
+  # 6 anchors distributed inside the anchor box
+  fixed_anchors:
+    - [-0.030, -0.470, 0.120]
+    - [ 0.150, -0.580, 0.180]
+    - [ 0.200, -0.300, 0.140]
+    - [-0.020, -0.280, 0.220]
+    - [ 0.050, -0.400, 0.160]
+    - [-0.030, -0.580, 0.200]
+
+  # Single stage — Stage 1 only
+  initial_stage_index: 0
+
+  stages:
+
+    - name: fixed_easy_anchors
+      description: "Fixed safe anchors — Stage 1 only"
+      mode: fixed_anchors
+      jitter_radius: 0.0
+      timesteps: 500000
+
+  log_interval_episodes: 50

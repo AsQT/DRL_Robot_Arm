@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<robot name="Table">
+
+  <link name="Table">
+    <inertial>
+      <!-- COM gần giữa chiều cao vì mesh cao 0.36 m -->
+      <origin xyz="0 0 0.180" rpy="0 0 0"/>
+      <mass value="1.0"/>
+      <inertia
+        ixx="0.016325"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="0.027325"
+        iyz="0.0"
+        izz="0.028333"/>
+    </inertial>
+
+    <visual>
+      <!-- Giữ nguyên gốc mesh: tâm đáy -->
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+         <mesh filename="/Mesh/Visual/Table.stl" scale="1 1 1"/>
+      </geometry>
+      <material name="light_gray">
+        <color rgba="0.85 0.85 0.85 1.0"/>
+      </material>
+    </visual>
+
+    <collision>
+      <!-- Cách 1: collision dùng chính mesh -->
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+         <mesh filename="/Mesh/Visual/Table.stl" scale="1 1 1"/>
+      </geometry>
+    </collision>
+  </link>
+
+</robot>

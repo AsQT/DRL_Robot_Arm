@@ -1,0 +1,152 @@
+# =============================================================================
+# DRL Cartesian Path Planning — Simple Distance, Random Start & Target
+# =============================================================================
+# FRAME-ONLY Cartesian DRL. No robot, no URDF, no IK/FK, no joints, no MoveIt.
+#
+# Key features:
+#   - random start: sample from region_min/region_max (resample on collision)
+#   - random target: uniform sample in target_region, z always exactly 0.10
+#   - simple distance reward: step=-10.0*dist, terminal=+/-100, timeout=-10*dist
+#
+# NO: progress_reward, step_penalty, path_length_penalty, detour_penalty,
+#     backtrack_penalty, direction_penalty, action_norm_penalty,
+#     smoothness_penalty, path_efficiency_bonus
+#
+# VecNormalize: DISABLED
+# Curriculum: optional (pass --curriculum-config to enable)
+# =============================================================================
+
+project:
+  name: DRL_Pathplanning_trainning
+  robot_name: FRAME_ONLY
+  unit: meter
+
+# ---------------------------------------------------------------------------
+# Start position — random sampling with collision-aware resampling
+# ---------------------------------------------------------------------------
+start:
+  mode: random                    # 'fixed' | 'random'
+  random_start: true              # if true, sample from region below
+  position: [0.35, -0.33, 0.10]  # fallback/fixed position (unused when random_start=true)
+  region_min: [-0.15, -0.75, 0.10]  # random start region lower corner
+  region_max: [0.45, -0.05, 0.20]   # random start region upper corner
+
+# ---------------------------------------------------------------------------
+# Workspace / search region
+# ---------------------------------------------------------------------------
+workspace:
+  name: search_region
+  min: [-0.200, -0.800, 0.020]
+  max: [0.500, 0.000, 0.320]
+
+# ---------------------------------------------------------------------------
+# Target region — random target, z always exactly 0.10
+# ---------------------------------------------------------------------------
+target_region:
+  enabled: true
+  random_target: true
+  min: [-0.135, -0.7150, 0.10]
+  max: [0.195, -0.385, 0.10]   # z max = 0.10 forces z to always be exactly 0.10
+  fixed_target: [0.030, -0.535, 0.10]
+
+# ---------------------------------------------------------------------------
+# Fixed table (always visible, always collidable)
+# ---------------------------------------------------------------------------
+table:
+  enabled: true
+  name: table
+  type: box
+  center: [0.030, -0.550, -0.150]
+  size: [0.330, 0.330, 0.360]
+  color: [0.0, 0.0, 0.0, 1.0]
+  collision: true
+
+# ---------------------------------------------------------------------------
+# Optional box obstacle (hidden by default, collidable when enabled)
+# ---------------------------------------------------------------------------
+box:
+  enabled: false
+  name: box
+  type: box
+  center: [0.0, 0.0, 0.0]
+  size: [0.10, 0.10, 0.10]
+  color: [0.1, 0.1, 0.1, 1.0]
+  collision: false
+  safety_margin: 0.01
+
+plane:
+  enabled: true
+  z: -0.330
+  center: [0.150, -0.350, -0.330]
+  size: [1.0, 1.0]
+  color: [0.82, 0.82, 0.82, 0.35]
+  collision: false
+
+environment:
+  mode: Default
+  action_step: 0.01
+  max_steps: 500
+  target_threshold: 0.01
+
+# ---------------------------------------------------------------------------
+# Reward — simple_distance mode
+# ---------------------------------------------------------------------------
+reward:
+  reward_mode: simple_distance
+
+  # Step reward
+  distance_scale: 10.0          # reward = -10.0 * current_distance_to_target
+
+  # Terminal rewards
+  success_bonus: 100.0          # +100 on reaching target
+  collision_penalty: 100.0      # -100 on collision
+  workspace_penalty: 100.0      # -100 on workspace violation
+  timeout_distance_scale: 10.0   # -10 * final_distance on timeout
+
+  # All other reward components are zero (not used)
+  progress_scale: 0.0
+  step_penalty: 0.0
+  path_length_scale: 0.0
+  action_norm_scale: 0.0
+  action_smoothness_scale: 0.0
+  direction_misalignment_scale: 0.0
+  path_efficiency_bonus_scale: 0.0
+  detour_penalty_scale: 0.0
+  backtrack_penalty_scale: 0.0
+
+visualization:
+  enabled: true
+  gui: true
+  hide_debug_ui: true
+  show_workspace: true
+  show_target_region: true
+  show_start_frame: true
+  show_target_frame: true
+  show_agent_frame: true
+  show_table: true
+  show_box: false
+  show_obstacle_safety_zone: false
+  show_path: true
+  show_ground_plane: true
+  show_labels: true
+  camera:
+    distance: 1.2
+    yaw: -60
+    pitch: -35
+    target: [0.150, -0.350, 0.170]
+  style:
+    frame_axis_length: 0.05
+    agent_radius: 0.015
+    path_line_width: 4
+
+training:
+  algorithm: TD3
+  total_timesteps: 500000
+  seed: 42
+  device: auto
+  vec_normalize: false   # DISABLED
+
+evaluation:
+  seed: 42
+  num_episodes: 100
+  export_waypoints: true

@@ -1,0 +1,2 @@
+time/fps,rollout/ep_len_mean,rollout/success_rate,train/ent_coef,train/ent_coef_loss,time/time_elapsed,train/learning_rate,train/n_updates,train/actor_loss,time/total_timesteps,time/episodes,train/critic_loss,rollout/ep_rew_mean
+11,169.2,0.0,0.20388229191303253,-8.043277740478516,144,0.001,1591,-3.2889339923858643,1692,10,0.003072392661124468,-61.777141300000004

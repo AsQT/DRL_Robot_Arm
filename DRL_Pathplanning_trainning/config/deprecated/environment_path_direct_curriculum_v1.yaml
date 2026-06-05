@@ -1,0 +1,152 @@
+# =============================================================================
+# DRL Cartesian Path Planning — Curriculum Training Environment Configuration
+# =============================================================================
+# Used with curriculum/path_direct_curriculum_v1.yaml for staged target difficulty.
+#
+# KEY PRINCIPLE: reward stays STABLE across all curriculum stages.
+# Only the target distribution changes (easier -> harder).
+#
+# Reward design:
+#   - Strong progress reward (50.0) to encourage forward movement
+#   - Moderate path penalty (0.1) to discourage wasteful detours
+#   - Small detour penalty (0.01) for per-step overshoot
+#   - Moderate backtrack penalty (0.5) for moving away from target
+#   - Moderate success bonus (120.0) to strongly reinforce reaching target
+#   - path_efficiency_bonus ONLY on success (not on failure)
+#   - Smoothness and direction alignment to keep actions clean
+#
+# Reward components (all logged separately):
+#   progress_reward, distance_penalty, step_penalty, path_length_penalty,
+#   detour_penalty, backtrack_penalty, action_norm_penalty, smoothness_penalty,
+#   direction_penalty, success_reward, collision_penalty, workspace_penalty,
+#   path_efficiency_bonus
+# =============================================================================
+
+project:
+  name: DRL_Pathplanning_trainning
+  robot_name: FRAME_ONLY
+  unit: meter
+
+# ---------------------------------------------------------------------------
+# Start position
+# ---------------------------------------------------------------------------
+start:
+  mode: fixed
+  position: [0.35, -0.33, 0.06]
+
+# ---------------------------------------------------------------------------
+# Workspace / search region
+# ---------------------------------------------------------------------------
+workspace:
+  name: search_region
+  min: [-0.200, -0.800, 0.020]
+  max: [0.500, 0.000, 0.320]
+
+# ---------------------------------------------------------------------------
+# Target region (used by curriculum — overrides apply)
+# ---------------------------------------------------------------------------
+target_region:
+  enabled: true
+  random_target: true
+  min: [-0.135, -0.7150, 0.030]
+  max: [0.195, -0.385, 0.130]
+  fixed_target: [0.030, -0.535, 0.110]
+
+obstacle:
+  enabled: true
+  random: false
+  name: small_obstacle
+  type: box
+  center: [0.1450, -0.550, 0.080]
+  size: [0.100, 0.100, 0.100]
+  safety_margin: 0.01
+  random_region:
+    enabled: false
+    min: [-0.100, -0.650, 0.060]
+    max: [0.400, -0.400, 0.160]
+
+plane:
+  enabled: true
+  z: -0.330
+  center: [0.150, -0.350, -0.330]
+  size: [1.0, 1.0]
+  color: [0.82, 0.82, 0.82, 0.35]
+  collision: false
+
+fixed_objects:
+  - enabled: true
+    name: black_block
+    type: box
+    center: [0.030, -0.550, -0.150]
+    size: [0.330, 0.330, 0.360]
+    color: [0.0, 0.0, 0.0, 1.0]
+    collision: false
+
+environment:
+  mode: Default
+  action_step: 0.01
+  max_steps: 500
+  target_threshold: 0.01
+
+# ---------------------------------------------------------------------------
+# Reward function weights — STABLE ACROSS ALL CURRICULUM STAGES
+# ---------------------------------------------------------------------------
+reward:
+  # --- Core shaping ---
+  progress_scale: 50.0             # bonus per metre of progress toward target
+  distance_scale: 1.0               # shaping penalty proportional to current dist
+  step_penalty: 0.02             # small penalty each step
+  path_length_scale: 0.10        # penalise per-metre of path taken
+
+  # --- Path quality penalties ---
+  detour_penalty_scale: 0.01     # penalise per-step overshoot beyond useful progress
+  backtrack_penalty_scale: 0.5    # penalise moving AWAY from target (progress < 0)
+
+  # --- Action quality ---
+  action_norm_scale: 0.001         # small penalty on full-magnitude actions
+  action_smoothness_scale: 0.01   # penalise zig-zag / action changes
+  direction_misalignment_scale: 0.05  # penalise moving away from target direction
+
+  # --- Success ---
+  success_bonus: 120.0            # reward on target reach
+  path_efficiency_bonus_scale: 10.0  # bonus on success proportional to path efficiency
+
+  # --- Safety ---
+  collision_penalty: 100.0        # negative on collision
+  workspace_penalty: 80.0          # negative on workspace violation
+
+visualization:
+  enabled: true
+  gui: true
+  hide_debug_ui: true
+  show_workspace: true
+  show_target_region: true
+  show_start_frame: true
+  show_target_frame: true
+  show_agent_frame: true
+  show_obstacle: true
+  show_obstacle_safety_zone: true
+  show_path: true
+  show_ground_plane: true
+  show_labels: true
+  camera:
+    distance: 1.2
+    yaw: -60
+    pitch: -35
+    target: [0.150, -0.350, 0.170]
+  style:
+    frame_axis_length: 0.05
+    agent_radius: 0.015
+    path_line_width: 4
+
+training:
+  algorithm: DDPG
+  total_timesteps: 11000000
+  seed: 42
+  device: auto
+  vec_normalize: false
+
+evaluation:
+  seed: 42
+  num_episodes: 100
+  export_waypoints: true

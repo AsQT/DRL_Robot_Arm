@@ -1,0 +1,44 @@
+# ---------------------------------------------------------------------------
+# TD3 experiment — Path Optimization (from-scratch training)
+# ---------------------------------------------------------------------------
+algorithm: TD3
+policy: MlpPolicy
+
+# --- Training duration ---
+total_timesteps: 1000000
+log_interval: 50
+episode_log_interval: 1000  # detailed episode summary printed every N episodes
+
+# --- Core hyperparameters ---
+gamma: 0.98
+learning_rate: 0.0003
+batch_size: 256
+buffer_size: 500000
+learning_starts: 10000
+tau: 0.005
+train_freq: 1
+gradient_steps: 1
+
+# --- TD3-specific ---
+policy_delay: 2                    # delay between policy updates (SB3 param)
+target_policy_noise: 0.2            # noise added to target Q-values
+target_noise_clip: 0.5              # clip range for target noise
+
+# --- Policy network ---
+policy_kwargs:
+  net_arch: [256, 256]
+
+# --- Action noise (exploration during training) ---
+action_noise:
+  type: NormalActionNoise
+  mean: 0.0
+  sigma: 0.1
+
+# --- Vectorized environment ---
+n_envs: 8                         # number of parallel environments
+vec_env_type: auto                # auto|dummy|subproc
+vec_normalize: false               # DISABLED for this simple-distance experiment
+norm_obs: false                   # normalize observations
+norm_reward: false               # normalize rewards
+device: auto
+progress_bar: true

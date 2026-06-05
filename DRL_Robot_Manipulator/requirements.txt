@@ -1,0 +1,58 @@
+# =============================================================================
+# Deep Reinforcement Learning for Yaskawa GP7 Robot Manipulation
+# =============================================================================
+# Pinned versions strategy:
+#   - Patch releases (e.g. 1.26.0 -> 1.26.4) are always safe upgrades and are
+#     included to capture upstream bug/security fixes.
+#   - Minor/major bumps (e.g. torch 2.2.0 -> 2.2.2) are included only when
+#     verified compatible with the rest of the stack.
+#   - Never auto-upgrade across major versions without manual verification.
+# =============================================================================
+
+# --- Core ML / RL ---
+# gymnasium: 0.29.x is the last stable series compatible with SB3 2.x.
+#   SB3 2.3.0 requires gymnasium >= 0.29.0 and < 1.0.0.
+gymnasium==0.29.1
+# stable-baselines3: 2.3.0 is the latest stable release. It requires gymnasium
+#   0.29.x, torch >= 1.11, and numpy >= 1.16.
+stable-baselines3==2.3.0
+# torch: 2.2.2 ships with CUDA 12.1 support. This is the highest 2.2.x patch
+#   at time of lock. Compatible with stable-baselines3 2.3.0.
+torch==2.2.2
+torchvision==0.17.2
+torchaudio==2.2.2
+# NOTE: The Dockerfile overrides these three torch packages with the official
+#       PyTorch CUDA 12.1 wheel (see docker/Dockerfile) to get GPU support.
+
+# --- Physics Simulation ---
+# pybullet: 3.2.5 (build time Apr 21 2025). This exact version is confirmed
+#   running in the user's environment and passes all tests.
+pybullet==3.2.5
+# pybullet-data: must track pybullet minor version exactly (3.2.x).
+pybullet-data==3.2.5
+
+# --- Scientific Computing ---
+# numpy: 1.26.4 is the last 1.26 release. 2.x breaks too many downstream libs.
+#   SB3 requires numpy >= 1.16. gymnasium 0.29.x requires numpy < 2.0.
+numpy==1.26.4
+# scipy: 1.12.0 is the last 1.12 release. Compatible with numpy 1.26.x.
+scipy==1.12.0
+# pandas: 2.2.x is the latest stable 2.x series. numpy 1.26 compatible.
+pandas==2.2.1
+
+# --- Visualisation ---
+# matplotlib: 3.8.2 locks the full 3.8.x patchset. numpy 1.26 compatible.
+matplotlib==3.8.2
+# scienceplots: 2.1.1 is the latest release. Requires matplotlib >= 3.4.
+scienceplots==2.1.1
+
+# --- Utilities ---
+# PyYAML: 6.0.1 locks the 6.0.x stable series.
+PyYAML==6.0.1
+# tqdm: >= 4.66.2 so rich progress bars work in SB3. Pinned for reproducibility.
+tqdm==4.66.2
+# rich: >= 13.0.0 required by tqdm.pandas. Pinned for reproducibility.
+rich==13.7.1
+# tensorboard: 2.16.2 ships with torch 2.2.x compatible tensorboard plugin.
+#   SB3 uses torch.utils.tensorboard for logging (requires tensorboard >= 2.2).
+tensorboard==2.16.2

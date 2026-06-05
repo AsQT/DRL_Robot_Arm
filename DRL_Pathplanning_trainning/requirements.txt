@@ -1,0 +1,64 @@
+# =============================================================================
+# DRL Cartesian Path Planning Training — Python Dependencies
+# =============================================================================
+# Python version: 3.10.x (tested on 3.10.12)
+#
+# Pinned versions strategy:
+#   - Patch releases are always safe upgrades (e.g. 2.3.0 -> 2.3.1).
+#   - Minor/major bumps included only when verified compatible.
+#   - Never auto-upgrade across major versions without manual verification.
+#
+# GPU note:
+#   - torch 2.2.2 is installed with CUDA 12.1 support (torch+cu121 wheels).
+#   - This works on any machine with an NVIDIA GPU and appropriate drivers.
+#   - To install a CPU-only version instead, see docs/SETUP_ENVIRONMENT.md.
+#
+# OS dependencies (install via apt, NOT pip):
+#   - libgl1-mesa-glx, libglib2.0-0  (required by pybullet / PyOpenGL)
+# =============================================================================
+
+# --- Core ML / RL ---
+# gymnasium 0.29.x is the last stable series compatible with SB3 2.x.
+#   SB3 2.3.0 requires gymnasium >= 0.29.0 and < 1.0.0.
+gymnasium==0.29.1
+# stable-baselines3 2.3.0 is the latest stable release.
+stable-baselines3==2.3.0
+
+# --- PyTorch (CUDA 12.1) ---
+# torch 2.2.2 with CUDA 12.1 support. Required by stable-baselines3.
+# Training uses torch for neural network policies and value functions.
+# To replace with CPU-only: pip install torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu
+torch==2.2.2+cu121
+torchvision==0.17.2+cu121
+
+# --- Scientific Computing ---
+# numpy 1.26.4 is the last 1.26 release.
+#   gymnasium 0.29.x requires numpy < 2.0.
+numpy==1.26.4
+# scipy 1.12.0 compatible with numpy 1.26.x.
+scipy==1.12.0
+# pandas 2.2.x compatible with numpy 1.26.
+#   Required by Evaluation/plot_results.py for result analysis.
+pandas==2.2.1
+
+# --- Configuration & Logging ---
+PyYAML==6.0.1
+tqdm==4.66.2
+rich==13.7.1
+tensorboard==2.16.2
+
+# --- Visualization ---
+# pybullet 3.2.5 is used for visualising the Cartesian path planning environment.
+#   Used ONLY for visualising; NOT for robot simulation, IK, FK, or dynamics.
+#   pybullet-data is bundled inside the pybullet package — no separate install needed.
+pybullet==3.2.5
+matplotlib==3.8.2
+
+# --- Testing ---
+pytest==8.3.5
+
+# --- Stable-Baselines3 transitive dependencies (pinned for reproducibility) ---
+# cloudpickle: used by SB3 for model serialization.
+cloudpickle==3.1.2
+# filelock: used by SB3 model save/load operations.
+filelock==3.29.0

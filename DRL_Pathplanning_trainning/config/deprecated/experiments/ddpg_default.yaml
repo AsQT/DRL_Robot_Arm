@@ -1,0 +1,34 @@
+# ---------------------------------------------------------------------------
+# DDPG experiment — Default mode
+# ---------------------------------------------------------------------------
+algorithm: DDPG
+policy: MlpPolicy
+total_timesteps: 500000
+log_interval: 50
+
+# --- Core hyperparameters ---
+gamma: 0.98
+learning_rate: 0.0003
+batch_size: 256
+buffer_size: 500000
+learning_starts: 5000
+tau: 0.005
+train_freq: 1
+gradient_steps: 1
+
+policy_kwargs:
+  net_arch: [256, 256]
+
+action_noise:
+  type: NormalActionNoise
+  mean: 0.0
+  sigma: 0.2
+
+# --- Vectorized environment options ---
+n_envs: 8                      # number of parallel environments
+vec_env_type: auto             # auto|dummy|subproc (auto: dummy if n_envs==1 else subproc)
+vec_normalize: true            # enable VecNormalize
+norm_obs: true                 # normalize observations
+norm_reward: true             # normalize rewards
+device: auto
+progress_bar: true

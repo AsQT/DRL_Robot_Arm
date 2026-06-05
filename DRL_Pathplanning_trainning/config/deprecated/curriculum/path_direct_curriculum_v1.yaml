@@ -1,0 +1,94 @@
+# =============================================================================
+# DRL Cartesian Path Planning — Path-Direct Curriculum v1
+# =============================================================================
+# Curriculum target sampler that progressively increases difficulty from
+# simple fixed anchors to full-workspace random targets.
+#
+# The reward function stays STABLE across all stages.
+# Only the target distribution changes (easier -> harder).
+#
+# Design:
+#   Stage 1: fixed_easy_anchors     — 6 safe anchors in inner workspace (20% margin)
+#   Stage 2: small_neighborhood      — jitter around anchors, radius 0.03m
+#   Stage 3: medium_neighborhood    — jitter around anchors, radius 0.06m
+#   Stage 4: large_neighborhood     — jitter around anchors, radius 0.10m
+#   Stage 5: inner_workspace_random — random in inner 70% of safe workspace
+#   Stage 6: full_workspace_random  — random in full safe workspace
+#
+# Anchor positions (with 20% inner margin on workspace):
+#   workspace: [-0.20, -0.80, 0.02] -> [0.50, 0.00, 0.32]
+#   range:     [ 0.70,  0.80, 0.30]
+#   20% margin: [0.14,  0.16, 0.06]
+#   anchor_box: [-0.06, -0.64, 0.08] -> [0.36, -0.16, 0.26]
+#
+# Total training: 500k + 1M + 1.5M + 2M + 3M + 3M = 11M timesteps
+# =============================================================================
+
+project:
+  name: DRL_Pathplanning_trainning
+  robot_name: FRAME_ONLY
+  unit: meter
+
+# ---------------------------------------------------------------------------
+# Curriculum configuration
+# ---------------------------------------------------------------------------
+curriculum:
+  enabled: true
+
+  # Anchor box (20% inner margin on workspace)
+  anchor_box:
+    min: [-0.06, -0.64, 0.08]
+    max: [ 0.36, -0.16, 0.26]
+
+  # 6 anchors distributed inside the anchor box
+  # These are easy-to-reach, well-separated targets
+  fixed_anchors:
+    - [-0.030, -0.470, 0.120]   # front-center, mid height
+    - [ 0.150, -0.580, 0.180]   # right-back, high
+    - [ 0.200, -0.300, 0.140]   # right-front, mid height
+    - [-0.020, -0.280, 0.220]   # left-front, high
+    - [ 0.050, -0.400, 0.160]   # center-back, mid height
+    - [-0.030, -0.580, 0.200]   # left-back, high
+
+  # Stage definitions (ordered)
+  stages:
+
+    - name: fixed_easy_anchors
+      description: "Fixed safe anchors — robot learns to navigate to known targets"
+      mode: fixed_anchors
+      # No jitter — pure anchor targets
+      jitter_radius: 0.0
+      anchor_weight_uniform: true
+      timesteps: 500000
+
+    - name: small_neighborhood
+      description: "Small jitter around anchors — introduces mild variation"
+      mode: anchor_neighborhood
+      jitter_radius: 0.03        # metres
+      timesteps: 1000000
+
+    - name: medium_neighborhood
+      description: "Medium jitter around anchors — harder targets"
+      mode: anchor_neighborhood
+      jitter_radius: 0.06        # metres
+      timesteps: 1500000
+
+    - name: large_neighborhood
+      description: "Large jitter around anchors — near full difficulty"
+      mode: anchor_neighborhood
+      jitter_radius: 0.10        # metres
+      timesteps: 2000000
+
+    - name: inner_workspace_random
+      description: "Random targets in inner 70% of safe workspace"
+      mode: random_inner_workspace
+      inner_margin: 0.15         # 15% margin on each side of workspace (70% usable)
+      timesteps: 3000000
+
+    - name: full_workspace_random
+      description: "Random targets in full safe workspace"
+      mode: random_full_workspace
+      timesteps: 3000000
+
+  # Progress notification interval (every N episodes)
+  log_interval_episodes: 50
