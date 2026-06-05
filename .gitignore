@@ -13,6 +13,11 @@ monitor.csv
 progress.csv
 time.txt
 
+DRL_Pathplanning_trainning/Data/
+DRL_Robot_Manipulator/Data/Training/
+DRL_Robot_Manipulator/Data/Prediction/
+DRL_Robot_Manipulator/Data/Model/
+
 # Ignore large training replay buffers
 DRL_Robot_Manipulator/Data/Training/Environment_Default/DDPG/YASKAWA_GP7/run/*.pkl
 

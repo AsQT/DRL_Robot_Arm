@@ -189,7 +189,7 @@ training:
   algorithm: TD3           # overridden by each script (not used for selection here)
   total_timesteps: 10000000
   seed: 42
-  device: auto
+  device: cuda
   n_envs: 30
   vec_env_type: auto
   progress_bar: true

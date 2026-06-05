@@ -81,6 +81,12 @@ def _parse_args() -> argparse.Namespace:
         help="Path to replay_buffer.pkl to load before training",
     )
     parser.add_argument(
+        "--timesteps",
+        type=int,
+        default=None,
+        help="Override total_timesteps from config [default: use config value]",
+    )
+    parser.add_argument(
         "--gui",
         type=str,
         default="false",
@@ -157,7 +163,7 @@ def main() -> None:
     train_sb3_model(
         algorithm=script_algo,
         env_config=cfg,
-        total_timesteps=cfg.training.total_timesteps,
+        total_timesteps=args.timesteps if args.timesteps is not None else cfg.training.total_timesteps,
         seed=cfg.training.seed,
         n_envs=cfg.training.n_envs,
         vec_env_type=cfg.training.vec_env_type,
