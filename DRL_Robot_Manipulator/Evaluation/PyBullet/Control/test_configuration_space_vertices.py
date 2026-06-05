@@ -11,13 +11,8 @@ if _project_root not in sys.path:
 _src_dir = os.path.join(_project_root, 'src')
 if _src_dir not in sys.path:
     sys.path.insert(0, _src_dir)
-#   Add RoLE parent (project root) so "import RoLE..." works.
-if _project_root not in sys.path:
-    sys.path.insert(0, _project_root)
 # Numpy (Arline computing) [pip3 install numpy]
 import numpy as np
-# OS (Operating system interfaces)
-import os
 # Time (Time access and conversions)
 import time
 # Custom Lib.:
@@ -30,13 +25,13 @@ from RoLE.Transformation.Core import Homogeneous_Transformation_Matrix_Cls as HT
 #       ../PyBullet/Core
 import PyBullet.Core
 import pybullet as pb
-from config_loader import PROJECT_FOLDER_NAME
+from config_loader import PROJECT_ROOT
 
 # =============================================================================
 # Constants
 # =============================================================================
 CONST_ROBOT_TYPE = Parameters.YASKAWA_GP7_Str
-CONST_PROJECT_FOLDER = os.getcwd().split(PROJECT_FOLDER_NAME)[0] + PROJECT_FOLDER_NAME
+CONST_PROJECT_FOLDER = str(PROJECT_ROOT)
 CONST_PYBULLET_ENV_PROPERTIES = {
     'Enable_GUI': True, 'fps': 100,
     'External_Base': None, 'Env_ID': 0,
@@ -93,6 +88,25 @@ def _get_ee_link_index(robot_id):
         if 'ee_link' in link_name.lower() or 'end_effector' in link_name.lower():
             return idx
     return None
+
+
+def _get_link_index_by_name(robot_id, expected_link_name):
+    """Return the PyBullet link index with an exact child-link name match."""
+    num_joints = pb.getNumJoints(robot_id)
+    for idx in range(num_joints):
+        info = pb.getJointInfo(robot_id, idx)
+        link_name = info[12].decode('utf-8') if isinstance(info[12], bytes) else info[12]
+        if link_name == expected_link_name:
+            return idx
+    return None
+
+
+def _get_link_name(robot_id, link_index):
+    """Return child-link name for a PyBullet link index, or None if invalid."""
+    if link_index is None:
+        return None
+    info = pb.getJointInfo(robot_id, link_index)
+    return info[12].decode('utf-8') if isinstance(info[12], bytes) else info[12]
 
 
 def _call_ik_6d(robot_id, link_index, target_position, target_orientation_xyzw):
@@ -228,12 +242,13 @@ def main():
     _print_link_table(robot_id)
 
     ee_link_idx = _get_ee_link_index(robot_id)
-    ee_link_name = None
+    ee_link_name = _get_link_name(robot_id, ee_link_idx)
+    link_6_idx = _get_link_index_by_name(robot_id, 'link_6')
+    link_6_name = _get_link_name(robot_id, link_6_idx)
     print(f'ee_link detected at PyBullet index: {ee_link_idx}')
     if ee_link_idx is not None:
-        info = pb.getJointInfo(robot_id, ee_link_idx)
-        ee_link_name = info[12].decode('utf-8') if isinstance(info[12], bytes) else info[12]
         print(f'  name: {ee_link_name}')
+    print(f'link_6 detected at PyBullet index: {link_6_idx}')
     print()
 
     # --- Get vertices ---
@@ -256,26 +271,27 @@ def main():
         )
         prod_summary = _print_results_table(f'6D IK (ee_link #{ee_link_idx})', ee_link_idx, ee_link_name, prod_results)
     else:
-        print('[WARN] ee_link not found — cannot run production 6-D IK test')
+        print('[WARN] ee_link not found - cannot run production 6-D IK test')
         prod_summary = None
 
     # --- Diagnostic: link_6 (old TCP, before tool/ee chain was added to URDF) ---
-    print('=' * 60)
-    print('DIAGNOSTIC A: Position-only IK, link_index=5 (link_6 / old TCP)')
-    print('=' * 60)
-    diag_a_results = _run_ik_diagnostic(
-        robot_id, robot_id_ghost, theta_index,
-        link_index=5, link_name='link_6',
-        C_vertices=C_vertices, q_Down=q_Down, use_6d_ik=False
-    )
-    diag_a_summary = _print_results_table('Pos-only IK (link_6 / OLD)', 5, 'link_6', diag_a_results)
+    diag_a_summary = None
+    if link_6_idx is not None:
+        print('=' * 60)
+        print(f'DIAGNOSTIC A: Position-only IK, link_index={link_6_idx} (link_6 / old TCP)')
+        print('=' * 60)
+        diag_a_results = _run_ik_diagnostic(
+            robot_id, robot_id_ghost, theta_index,
+            link_index=link_6_idx, link_name=link_6_name,
+            C_vertices=C_vertices, q_Down=q_Down, use_6d_ik=False
+        )
+        diag_a_summary = _print_results_table('Pos-only IK (link_6 / OLD)', link_6_idx, link_6_name, diag_a_results)
+    else:
+        print('[WARN] link_6 not found - skipping diagnostic A.\n')
 
     # --- Diagnostic B/C: if ee_link exists, test it ---
     diag_b_summary = None
     if ee_link_idx is not None:
-        info = pb.getJointInfo(robot_id, ee_link_idx)
-        ee_link_name = info[12].decode('utf-8') if isinstance(info[12], bytes) else info[12]
-
         print('=' * 60)
         print(f'DIAGNOSTIC B: 6-D IK, link_index={ee_link_idx} ({ee_link_name})')
         print('=' * 60)
@@ -296,23 +312,27 @@ def main():
         )
         diag_c_summary = _print_results_table(f'Pos-only IK', ee_link_idx, ee_link_name, diag_c_results)
     else:
-        print('ee_link not found in URDF — skipping diagnostics B and C.\n')
+        print('ee_link not found in URDF - skipping diagnostics B and C.\n')
 
     # --- Environment-style test: position-only IK targeting ee_link (matches GP7ReachPyBulletEnv) ---
-    print('=' * 60)
-    print(f'ENVIRONMENT STYLE: Position-only IK, ee_link (index={ee_link_idx}), tol=0.01 m')
-    print('=' * 60)
-    env_style_results = _run_ik_diagnostic(
-        robot_id, robot_id_ghost, theta_index,
-        link_index=ee_link_idx, link_name=ee_link_name,
-        C_vertices=C_vertices, q_Down=q_Down, use_6d_ik=False
-    )
-    env_style_tol = 0.01
-    for r in env_style_results:
-        r['successful'] = (r['pos_error'] <= env_style_tol)
-    env_style_summary = _print_results_table(
-        f'Pos-only IK (ee_link #{ee_link_idx}, tol={env_style_tol})', ee_link_idx, ee_link_name, env_style_results
-    )
+    env_style_summary = None
+    if ee_link_idx is not None:
+        print('=' * 60)
+        print(f'ENVIRONMENT STYLE: Position-only IK, ee_link (index={ee_link_idx}), tol=0.01 m')
+        print('=' * 60)
+        env_style_results = _run_ik_diagnostic(
+            robot_id, robot_id_ghost, theta_index,
+            link_index=ee_link_idx, link_name=ee_link_name,
+            C_vertices=C_vertices, q_Down=q_Down, use_6d_ik=False
+        )
+        env_style_tol = 0.01
+        for r in env_style_results:
+            r['successful'] = (r['pos_error'] <= env_style_tol)
+        env_style_summary = _print_results_table(
+            f'Pos-only IK (ee_link #{ee_link_idx}, tol={env_style_tol})', ee_link_idx, ee_link_name, env_style_results
+        )
+    else:
+        print('[WARN] ee_link not found - skipping environment-style diagnostic.\n')
 
     # --- Compact comparison table ---
     print('=' * 60)
@@ -327,18 +347,20 @@ def main():
     all_summaries = []
     if prod_summary is not None:
         all_summaries.append(prod_summary)
-    all_summaries.append(diag_a_summary)
+    if diag_a_summary is not None:
+        all_summaries.append(diag_a_summary)
     if diag_b_summary is not None:
         all_summaries.append(diag_b_summary)
     if diag_c_summary is not None:
         all_summaries.append(diag_c_summary)
-    all_summaries.append(env_style_summary)
+    if env_style_summary is not None:
+        all_summaries.append(env_style_summary)
     for s in all_summaries:
         print(f'  {s["mode"]:<45}  {s["link_index"]:>10}  {s["link_name"]:<15}  '
               f'{s["passed"]:>6}  {s["failed"]:>6}  '
               f'{s["max_pos_error"]:>14.6f}  {s["mean_pos_error"]:>15.6f}')
 
-    # --- Production run: single clean pass — environment-style position-only IK ---
+    # --- Production run: single clean pass - environment-style position-only IK ---
     print()
     print('=' * 60)
     print('PRODUCTION RUN: Robot_Cls using environment-style position-only IK')

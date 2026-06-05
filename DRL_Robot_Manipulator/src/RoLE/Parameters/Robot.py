@@ -183,6 +183,13 @@ class Robot_Parameters_Str:
     # or not. For example, a linear track.
     #   Unit [bool]
     External_Axis: bool = False
+    # PyBullet child-link name used as the TCP/end-effector frame.
+    #   Unit [string]
+    TCP_Link_Name: str = 'ee_link'
+    # Optional final visible tool link. Some robots use the TCP link directly and
+    # do not have a separate tool mesh link.
+    #   Unit [None|string]
+    Tool_Link_Name: tp.Union[None, str] = 'link_EE'
 
 """
 Robot Type - YASKAWA GP7:
@@ -287,3 +294,60 @@ YASKAWA_GP7_Str.Collider.External = {}
 #   Collision pairs.
 YASKAWA_GP7_Str.Collider.Pairs = np.array([[0, 4], [0, 5], [0, 6], [0, 3],
                                            [1, 4], [1, 5], [1, 6]], dtype=np.int8)
+
+
+"""
+Robot Type - ARM:
+    URDF path:
+        URDFs/Robots/ARM/ARM.urdf
+
+    Active joints:
+        joint_1 ... joint_6: revolute
+        joint_gl, joint_gr: prismatic gripper fingers
+
+    TCP:
+        tcp_link
+"""
+
+ARM_Str = Robot_Parameters_Str(Name='ARM', Id=2)
+ARM_Str.T.Base = HTM_Cls(None, np.float64)
+ARM_Str.T.End_Effector = HTM_Cls(None, np.float64)
+ARM_Str.TCP_Link_Name = 'tcp_link'
+ARM_Str.Tool_Link_Name = None
+
+ARM_Str.DH.Standard = np.array([], dtype=np.float64)
+ARM_Str.DH.Modified = np.array([], dtype=np.float64)
+
+ARM_Str.Theta.Zero = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=np.float64)
+ARM_Str.Theta.Home = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=np.float64)
+ARM_Str.Theta.Limit = np.array([
+    [-2.0943, 2.0943],
+    [-1.5707, 2.6179],
+    [-1.5707, 1.5707],
+    [-1.5707, 1.5707],
+    [-1.5707, 1.5707],
+    [-1.5707, 1.5707],
+    [-0.001, 0.02],
+    [-0.001, 0.02],
+], dtype=np.float64)
+
+ARM_Str.Theta.Name = [
+    f'Joint_1_{ARM_Str.Name}_ID_{ARM_Str.Id:03}',
+    f'Joint_2_{ARM_Str.Name}_ID_{ARM_Str.Id:03}',
+    f'Joint_3_{ARM_Str.Name}_ID_{ARM_Str.Id:03}',
+    f'Joint_4_{ARM_Str.Name}_ID_{ARM_Str.Id:03}',
+    f'Joint_5_{ARM_Str.Name}_ID_{ARM_Str.Id:03}',
+    f'Joint_6_{ARM_Str.Name}_ID_{ARM_Str.Id:03}',
+    f'Joint_GL_{ARM_Str.Name}_ID_{ARM_Str.Id:03}',
+    f'Joint_GR_{ARM_Str.Name}_ID_{ARM_Str.Id:03}',
+]
+ARM_Str.Theta.Type = ['R', 'R', 'R', 'R', 'R', 'R', 'P', 'P']
+ARM_Str.Theta.Axis = ['Z', 'Z', 'Z', 'Z', 'Z', 'Z', 'X', 'X']
+ARM_Str.Theta.Direction = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], dtype=np.int8)
+ARM_Str.External_Axis = False
+
+ARM_Str.Collider.Base = {}
+ARM_Str.Collider.Theta = {}
+ARM_Str.Collider.Offset = 2
+ARM_Str.Collider.External = {}
+ARM_Str.Collider.Pairs = np.array([], dtype=np.int8)

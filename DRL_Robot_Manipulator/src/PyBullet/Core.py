@@ -191,28 +191,39 @@ class Robot_Cls(object):
             #   Disable dynamic parameters of the object.
             pb.changeDynamics(self.__robot_id_ghost, linkIndex=i, linearDamping=0, angularDamping=0, jointDamping=0, mass=0)
 
-        # --- TCP link resolution: resolve "ee_link" by name, never hardcode index ---
-        self.__tcp_link_name = "ee_link"
+        # --- TCP link resolution: resolve by robot config, never hardcode index ---
+        self.__tcp_link_name = getattr(self.__Robot_Parameters_Str, 'TCP_Link_Name', 'ee_link')
+        self.__tool_link_name = getattr(self.__Robot_Parameters_Str, 'Tool_Link_Name', 'link_EE')
         self.__tcp_link_index = self.__Find_Link_Index_By_Name(self.__robot_id, self.__tcp_link_name)
         self.__ghost_tcp_link_index = self.__Find_Link_Index_By_Name(self.__robot_id_ghost, self.__tcp_link_name)
-        self.__tool_link_index = self.__Find_Link_Index_By_Name(self.__robot_id, "link_EE")
+        self.__tool_link_index = (
+            self.__Find_Link_Index_By_Name(self.__robot_id, self.__tool_link_name)
+            if self.__tool_link_name is not None else None
+        )
         self.__link_6_index = self.__Find_Link_Index_By_Name(self.__robot_id, "link_6")
-        self.__ghost_tool_link_index = self.__Find_Link_Index_By_Name(self.__robot_id_ghost, "link_EE")
+        self.__ghost_tool_link_index = (
+            self.__Find_Link_Index_By_Name(self.__robot_id_ghost, self.__tool_link_name)
+            if self.__tool_link_name is not None else None
+        )
         self.__ghost_link_6_index = self.__Find_Link_Index_By_Name(self.__robot_id_ghost, "link_6")
 
         print("[INFO] TCP link resolved: " + self.__tcp_link_name + " -> index " + str(self.__tcp_link_index))
         print("[INFO] Ghost TCP link resolved: " + self.__tcp_link_name + " -> index " + str(self.__ghost_tcp_link_index))
-        print("[INFO] Tool link (link_EE) index: " + str(self.__tool_link_index))
+        print("[INFO] Tool link (" + str(self.__tool_link_name) + ") index: " + str(self.__tool_link_index))
         print("[INFO] link_6 index: " + str(self.__link_6_index))
-        print("[INFO] Ghost tool link (link_EE) index: " + str(self.__ghost_tool_link_index))
+        print("[INFO] Ghost tool link (" + str(self.__tool_link_name) + ") index: " + str(self.__ghost_tool_link_index))
         print("[INFO] Ghost link_6 index: " + str(self.__ghost_link_6_index))
-        # Verify fixed offset: ee_link should be 0.090 m from link_EE along local Z.
+        if self.__tcp_link_index is None or self.__ghost_tcp_link_index is None:
+            raise RuntimeError(
+                "TCP link '" + self.__tcp_link_name + "' was not found in URDF: " + urdf_file_path
+            )
+        # Verify fixed offset when a separate visible tool link exists.
         if self.__tool_link_index is not None and self.__tcp_link_index is not None:
             tool_pose = self.__Get_Link_Pose(self.__robot_id, self.__tool_link_index)
             tcp_pose = self.__Get_Link_Pose(self.__robot_id, self.__tcp_link_index)
             if tool_pose is not None and tcp_pose is not None:
                 dist = float(np.linalg.norm(np.array(tcp_pose[0]) - np.array(tool_pose[0])))
-                print("[INFO] |ee_link - link_EE| = " + f"{dist:.6f}" + " m  (expected: 0.090000 m)")
+                print("[INFO] |" + self.__tcp_link_name + " - " + str(self.__tool_link_name) + "| = " + f"{dist:.6f}" + " m")
 
         # --- Make the final visible tool mesh (link_EE) black on the main robot ---
         # ee_link is the TCP frame with no mesh; link_EE carries the actual visible mesh.
@@ -223,7 +234,7 @@ class Robot_Cls(object):
                 rgbaColor=[0.0, 0.0, 0.0, 1.0],
                 physicsClientId=0
             )
-            print("[INFO] Main robot final visible link link_EE set to black.")
+            print("[INFO] Main robot final visible link " + str(self.__tool_link_name) + " set to black.")
 
         # --- Ghost visual shape setup: make all links invisible initially, then __Reset_Ghost_Structure controls visibility ---
         self.__Set_Ghost_Visibility(False, [0.0, 0.75, 0.0])
@@ -240,9 +251,9 @@ class Robot_Cls(object):
         # Get the home absolute joint positions of a specific environment for a defined robotic arm.
         Robot_Parameters_Str.Theta.Home = PyBullet.Utilities.Get_Robot_Structure_Theta_Home(self.__Robot_Parameters_Str.Name, properties['Env_ID'])
 
-        # --- Compute Home TCP pose using PyBullet FK on ee_link via the ghost robot ---
+        # --- Compute Home TCP pose using PyBullet FK on the configured TCP link via the ghost robot ---
         # This replaces the old RoLE Forward_Kinematics call with PyBullet FK,
-        # ensuring the Home orientation reflects the true URDF TCP frame (ee_link).
+        # ensuring the Home orientation reflects the true URDF TCP frame.
         home_tcp_pos, home_quat_xyzw, home_quat_wxyz = self.__Get_TCP_Pose_For_Joints(
             self.__robot_id_ghost,
             self.__ghost_tcp_link_index,
@@ -250,7 +261,7 @@ class Robot_Cls(object):
         )
         self.__q_Home = home_quat_wxyz
         self.__p_Home_TCP = home_tcp_pos
-        print(f"[INFO] Home TCP pose from PyBullet FK (ee_link): p={home_tcp_pos.tolist()}, q_wxyz={home_quat_wxyz.tolist()}")
+        print(f"[INFO] Home TCP pose from PyBullet FK ({self.__tcp_link_name}): p={home_tcp_pos.tolist()}, q_wxyz={home_quat_wxyz.tolist()}")
         # Load the collision object if one is defined for this environment.
         # Collision_Object is the RL learning obstacle — it is added to the robot's
         # external collider dictionary and included in the observation space.

@@ -1,315 +1,235 @@
-# DRL Robot Manipulator — Yaskawa GP7
+﻿# DRL Robot Manipulator
 
-Deep Reinforcement Learning training and evaluation framework for the **Yaskawa GP7** robotic arm, using **PyBullet** for physics simulation, **Gymnasium** for the environment API, and **Stable-Baselines3** for DRL algorithm implementations.
+Project này là framework huấn luyện và đánh giá Deep Reinforcement Learning cho robot manipulator trong PyBullet. Môi trường sử dụng Gymnasium làm API, Stable-Baselines3 cho các thuật toán DRL, và thư viện `RoLE` để hỗ trợ kinematics, transformation, trajectory, collider.
 
----
+Hiện project có hai bộ robot URDF chính:
 
-## Project Overview
+- `YASKAWA_GP7`: robot Yaskawa GP7 dùng trong các script training/evaluation hiện có.
+- `ARM`: robot arm được chuyển từ package `robot_description`, gồm 6 revolute joints, 2 prismatic gripper joints, `tcp_link` và camera `astra_link`.
 
-The project trains DRL agents (DDPG, SAC, TD3) to solve a **robotic reaching task**: moving the TCP (tool centre point) from a home configuration to a randomly sampled target position in the robot's configuration space. Two environment modes are available:
+## Mục tiêu
 
-| Mode | Description |
-|------|-------------|
-| `Default` | Free-space reaching — no obstacle |
-| `Collision-Free` | Reaching with a 0.1 m cube obstacle that the policy must navigate around |
+Agent học cách điều khiển TCP đi tới target trong không gian làm việc. Project hỗ trợ hai chế độ môi trường:
 
-The architecture separates concerns cleanly: PyBullet provides physics and rendering; a Gymnasium environment wraps the robot and exposes the RL interface; Stable-Baselines3 trains the policy; and a custom robotics library (RoLE) handles kinematics, transformations, and collision geometry.
+| Mode | Mô tả |
+|---|---|
+| `Default` | Reaching trong không gian tự do, không có vật cản. |
+| `Collision-Free` | Reaching có vật cản, policy cần tránh collision. |
 
----
+## Cấu trúc thư mục
 
-## Architecture
-
-```mermaid
-flowchart TD
-    subgraph Training["Training"]
-        TS[Training Script<br/>train_ddpg_gp7.py<br/>train_ddpg.py<br/>train_sac.py<br/>train_td3.py]
-        SB3[Stable-Baselines3<br/>DDPG / SAC / TD3]
-        MON[Monitor wrapper]
-        ENV[GP7ReachPyBulletEnv<br/>Gymnasium API]
-        PB[PyBullet.Core<br/>Robot_Cls]
-        URDF[URDF<br/>Robot Model]
-    end
-
-    subgraph RoLE["RoLE — Robotics Library for Everyone"]
-        KIN[Kinematics<br/>FK / IK]
-        TRA[Trajectory<br/>Trapezoidal / Polynomial]
-        COL[Collider<br/>AABB / OBB]
-        INT[Interpolation<br/>Bezier / B-Spline]
-        TRF[Transformation<br/>HTM / Quaternion / Euler]
-        PAR[Parameters<br/>Robot Definitions]
-    end
-
-    TS --> SB3
-    SB3 --> MON
-    MON --> ENV
-    ENV --> PB
-    PB --> URDF
-    PB --> KIN
-    PB --> TRA
-    PB --> COL
-    KIN --> TRF
-    KIN --> PAR
-    INT --> TRF
-    ENV --> COL
-    COL --> PAR
-
-    subgraph Output["Output"]
-        CSV[progress.csv<br/>monitor.csv]
-        MODEL[final_model.zip]
-        TB[tensorboard/]
-    end
-
-    SB3 --> CSV
-    SB3 --> MODEL
-    SB3 --> TB
-```
-
----
-
-## Repository Structure
-
-```
+```text
 DRL_Robot_Manipulator/
 ├── src/
-│   ├── config_loader.py           # Project root resolver (finds config.yaml)
+│   ├── config_loader.py
 │   ├── Industrial_Robotics_Gym/
-│   │   ├── __init__.py            # Gymnasium env registration
-│   │   ├── Utilities.py           # Environment ID builder
 │   │   └── Environment/
-│   │       ├── GP7ReachPyBulletEnv.py  # Active Gym env (PyBullet-backed)
-│   │       └── Core.py             # Legacy Gym env (unused by training)
+│   │       ├── GP7ReachPyBulletEnv.py
+│   │       └── Core.py
 │   ├── PyBullet/
-│   │   ├── Core.py                # Robot_Cls — PyBullet robot interface
-│   │   ├── Utilities.py           # Wireframe, environment structure lookup
+│   │   ├── Core.py
+│   │   ├── Utilities.py
 │   │   └── Configuration/
-│   │       └── Environment.py      # Dataclasses for env/collision parameters
-│   └── RoLE/                      # Robotics Library for Everyone
-│       ├── Parameters/Robot.py      # DH params, joint limits, collider defs
-│       ├── Transformation/Core.py    # HTM, Vector3, Quaternion, EulerAngle
-│       ├── Kinematics/Core.py      # FK, IK (JT / NR / GN / LM)
-│       ├── Collider/Core.py        # AABB, OBB collision detection
-│       ├── Primitives/Core.py       # Point, Line, Box primitives
-│       ├── Trajectory/              # Trapezoidal, polynomial profiles
-│       └── Interpolation/           # Bezier, B-Spline curves
+│   └── RoLE/
+│       ├── Parameters/
+│       ├── Transformation/
+│       ├── Kinematics/
+│       ├── Collider/
+│       ├── Primitives/
+│       ├── Trajectory/
+│       └── Interpolation/
 ├── Training/
-│   ├── train_ddpg_gp7.py          # DDPG, Default mode, 800k steps
-│   ├── train_ddpg.py              # DDPG, Collision-Free, 100k steps
-│   ├── train_sac.py              # SAC, Collision-Free, 100k steps
-│   └── train_td3.py             # TD3, Collision-Free, 100k steps
+│   ├── train_ddpg_gp7.py
+│   ├── train_ddpg.py
+│   ├── train_sac.py
+│   └── train_td3.py
 ├── Evaluation/
 │   ├── Gym/
-│   │   ├── Model/Prediction/     # Predict paths with trained models
-│   │   └── Model/Training/       # Visualise training progress
 │   └── PyBullet/
-│       └── Control/              # IK validation, config space tests
-├── Data/                         # Training outputs (gitignored)
-├── URDFs/                        # Robot URDF, primitives, viewpoint
-├── Textures/                     # Plane texture (gitignored)
+├── URDFs/
+│   ├── Robots/
+│   │   ├── ARM/
+│   │   └── YASKAWA_GP7/
+│   ├── Primitives/
+│   └── Viewpoint/
+├── Textures/
 ├── config/
-│   └── config.yaml               # PROJECT_FOLDER_NAME
-├── docker/                       # Dockerfile, compose files
-└── requirements.txt             # Pinned dependencies
+├── Data/
+└── requirements.txt
 ```
 
----
+## Thành phần chính
 
-## Installation
+| Thành phần | Vai trò |
+|---|---|
+| `src/Industrial_Robotics_Gym` | Định nghĩa Gymnasium environment cho bài toán reaching. |
+| `src/PyBullet` | Interface load robot, mô phỏng và hiển thị trong PyBullet. |
+| `src/RoLE` | Robotics helper library: FK/IK, transformation, trajectory, collider, primitives. |
+| `Training` | Script train DDPG, SAC, TD3. |
+| `Evaluation` | Script predict, plot kết quả training, kiểm tra IK/config space. |
+| `URDFs` | Robot URDF, mesh, primitive object, viewpoint frame. |
+| `Data` | Output training/evaluation như model, log, prediction. |
 
-### Prerequisites
+## Robot URDF
 
-| Component | Version | Notes |
-|-----------|---------|-------|
-| Python | 3.10 or 3.11 | Tested on 3.10 |
-| CUDA | 11.8 or 12.x | Optional — for GPU training |
+### `URDFs/Robots/YASKAWA_GP7`
 
-### Steps
+Chứa URDF và mesh cho robot Yaskawa GP7. Đây là robot đang được các script hiện có sử dụng mặc định.
 
-```bash
-# 1. Clone / navigate to project root
+File chính:
+
+- `YASKAWA_GP7.urdf`
+- `Mesh/Visual/*.stl`
+- `Mesh/Collision/*.STL`
+
+### `URDFs/Robots/ARM`
+
+Chứa URDF và mesh cho robot `ARM`, được chuyển từ package `robot_description`.
+
+File chính:
+
+- `ARM.urdf`
+- `Mesh/Visual/base_link.stl`, `link_1.stl` đến `link_6.stl`
+- `Mesh/Visual/gripper_l.stl`, `gripper_r.stl`, `astra_cam.stl`
+- `Mesh/Collision/...` tương ứng cho collision geometry
+
+`ARM.urdf` đã được chuyển sang URDF thuần để PyBullet có thể load trực tiếp, không cần xacro.
+
+## Cài đặt
+
+Tạo môi trường:
+
+```powershell
 cd DRL_Robot_Manipulator
-
-# 2. Create virtual environment (recommended)
 python -m venv .venv
-# Windows:
-.venv\Scripts\activate
-# Linux/macOS:
-source .venv/bin/activate
+```
 
-# 3. Install PyTorch with CUDA 12.1 support (GPU training)
-pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 \
-    --index-url https://download.pytorch.org/whl/cu121
+Kích hoạt môi trường:
 
-# 4. Install remaining dependencies
+| Terminal | Lệnh |
+|---|---|
+| PowerShell | `.\.venv\Scripts\Activate.ps1` |
+| CMD | `.venv\Scripts\activate.bat` |
+| Git Bash | `source .venv/Scripts/activate` |
+| Linux/macOS | `source .venv/bin/activate` |
+
+Cài dependency:
+
+```powershell
 pip install -r requirements.txt
+```
 
-# 5. Verify installation
+Nếu cần GPU, cài PyTorch CUDA trước khi cài các package còn lại:
+
+```powershell
+pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu121
+pip install -r requirements.txt
+```
+
+Kiểm tra dependency:
+
+```powershell
 python -c "import gymnasium; import stable_baselines3; import pybullet; print('OK')"
 ```
 
-> **Important:** On Windows, running `pip install -r requirements.txt` alone installs the CPU-only PyTorch wheel. Always run the CUDA wheel installation command first.
+## Chạy training
 
----
+Từ thư mục `DRL_Robot_Manipulator`:
 
-## Running Training
-
-From the project root directory:
-
-```bash
-# Default mode, GUI enabled, 800k steps (main training script)
-python Training/train_ddpg_gp7.py
-
-# Collision-Free mode, GUI enabled, 100k steps
-python Training/train_ddpg.py
-
-# Collision-Free mode, SAC, 100k steps
-python Training/train_sac.py
-
-# Collision-Free mode, TD3, 100k steps
-python Training/train_td3.py
-
-# Headless (no GUI window — faster training)
-# Edit the script and set: ENABLE_GUI = False
+```powershell
+python Training\train_ddpg_gp7.py
+python Training\train_ddpg.py
+python Training\train_sac.py
+python Training\train_td3.py
 ```
 
-Each run produces a timestamped output directory:
+Output training thường nằm trong:
 
-```
-Data/Training/Environment_{MODE}/{ALGORITHM}/YASKAWA_GP7/run_{TIMESTAMP}/
-├── config.json           # Experiment configuration
+```text
+Data/Training/Environment_{MODE}/{ALGORITHM}/{ROBOT_NAME}/run_{TIMESTAMP}/
+├── config.json
 ├── model/
-│   └── final_model.zip  # Saved policy (SB3 native format)
+│   ├── final_model.zip
+│   └── best_model.zip
 └── logs/
-    ├── progress.csv    # SB3 training metrics
-    ├── monitor.csv     # Episode rewards and lengths
-    └── time.txt         # Elapsed training time
+    ├── progress.csv
+    ├── monitor.csv
+    └── time.txt
 ```
 
----
+Các output này thường không nên commit lên Git, trừ khi cần lưu kết quả báo cáo hoặc demo.
 
 ## Environment Design
 
 ### Action Space
 
-`Box(-1.0, 1.0, shape=(3,))` — normalised 3-D Cartesian TCP delta `[dx, dy, dz]`.
+`Box(-1.0, 1.0, shape=(3,))`
 
-The environment scales the action by `action_step` (default 0.01 m) to produce an actual Cartesian displacement per step.
+Action là delta TCP trong không gian Cartesian:
+
+```text
+[dx, dy, dz]
+```
+
+Environment scale action bằng `action_step` để tạo displacement thực tế mỗi step.
 
 ### Observation Space
 
-`Box(-inf, inf, shape=(15,))` — 15-dimensional flat vector:
+Observation là vector 15 chiều:
 
-| Index | Field | Description |
-|-------|-------|-------------|
-| 0–2 | `tcp_x/y/z` | Current TCP position (world frame, m) |
-| 3–5 | `target_x/y/z` | Current target position (world frame, m) |
-| 6–8 | `err_x/y/z` | Target minus TCP position (m) |
-| 9–11 | `rel_obs_x/y/z` | Obstacle position relative to TCP (zero in Default mode) |
-| 12–14 | `obs_size_x/y/z` | Obstacle half-extents (zero in Default mode) |
+| Index | Field | Mô tả |
+|---|---|---|
+| `0-2` | `tcp_x/y/z` | Vị trí TCP hiện tại. |
+| `3-5` | `target_x/y/z` | Vị trí target. |
+| `6-8` | `err_x/y/z` | Sai số `target - tcp`. |
+| `9-11` | `rel_obs_x/y/z` | Vị trí vật cản tương đối với TCP. |
+| `12-14` | `obs_size_x/y/z` | Kích thước/half extent của vật cản. |
 
-### Reward
+### Termination
 
-| Event | Reward |
-|-------|--------|
-| Every step | `−euclidean_distance(tcp, target)` |
-| Truncation (workspace / IK / joint limit) | `−1.0` (plus step reward) |
-| Collision with obstacle | `−5.0` (plus truncation) |
+| Điều kiện | Kết quả |
+|---|---|
+| TCP cách target dưới `0.01 m` | `terminated = True` |
+| Vượt workspace, IK fail, joint limit, collision, max steps | `truncated = True` |
 
-### Termination / Truncation
+## Evaluation
 
-| Flag | Trigger |
-|------|---------|
-| `terminated = True` | TCP within 0.01 m (1 cm) of target |
-| `truncated = True` | Workspace violation, IK failure, joint limit breach, obstacle collision, or step limit (200) reached |
+Một số nhóm script đánh giá:
 
----
+| Thư mục/script | Mục đích |
+|---|---|
+| `Evaluation/Gym/Model/Prediction/Static` | Predict tới target cố định. |
+| `Evaluation/Gym/Model/Prediction/Random` | Predict nhiều target random. |
+| `Evaluation/Gym/Model/Training` | Plot/so sánh kết quả training. |
+| `Evaluation/PyBullet/Control` | Kiểm tra IK và configuration space. |
 
-## Environment Modes
+Kiểm tra configuration space cho robot `ARM`:
 
-Switch modes by changing `CONST_ENV_MODE` at the top of a training script:
-
-```python
-CONST_ENV_MODE = 'Default'         # No obstacle
-CONST_ENV_MODE = 'Collision-Free'   # Cube obstacle present
+```powershell
+python Evaluation\PyBullet\Control\test_configuration_space_arm.py
 ```
 
----
+Chạy nhanh không mở GUI:
 
-## TensorBoard
-
-TensorBoard logging is enabled automatically when `tensorboard` is installed. View logs:
-
-```bash
-tensorboard --logdir Data/Training/
+```powershell
+python Evaluation\PyBullet\Control\test_configuration_space_arm.py --headless --samples 10 --sleep 0
 ```
 
----
+Kiểm tra toàn bộ vertices của target/search space cho `ARM`:
 
-## Evaluation Scripts
-
-| Script | Purpose |
-|--------|---------|
-| `Evaluation/Gym/Model/Prediction/Static/predict_ddpg.py` | Run DDPG policy to a fixed target, save trajectory |
-| `Evaluation/Gym/Model/Prediction/Random/predict_ddpg.py` | Run DDPG for 100 random targets, save metrics |
-| `Evaluation/Gym/Model/Training/show_train_results.py` | Plot a single algorithm's training progress |
-| `Evaluation/Gym/Model/Training/show_train_comparison.py` | Compare all 6 algorithm variants |
-| `Evaluation/PyBullet/Control/test_configuration_space_rand.py` | Validate IK on random config-space targets |
-| `Evaluation/PyBullet/Control/test_configuration_space_vertices.py` | Validate IK on all config-space corner vertices |
-
----
-
-## Troubleshooting
-
-### PyBullet GUI on Windows
-
-PyBullet GUI works natively on Windows using native OpenGL. If the window fails to open:
-
-1. Ensure your graphics drivers are up to date.
-2. On Nvidia Optimus laptops, set the Nvidia GPU as the default for `python.exe`.
-3. Run headless (`ENABLE_GUI = False`) if display is unavailable.
-
-### GPU Not Detected
-
-```python
-import torch
-print(torch.cuda.is_available())   # Should be True with CUDA wheels
-print(torch.version.cuda)            # Should be '12.1'
+```powershell
+python Evaluation\PyBullet\Control\test_configuration_space_vertices_arm.py
 ```
 
-If False, reinstall PyTorch with the CUDA index URL:
+Chạy nhanh không mở GUI:
 
-```bash
-pip install torch==2.2.2 --index-url https://download.pytorch.org/whl/cu121
+```powershell
+python Evaluation\PyBullet\Control\test_configuration_space_vertices_arm.py --headless --sleep 0
 ```
 
-### Module Import Errors
+## Ghi chú phát triển
 
-Ensure you run from the project root directory, or that `src/` is in `PYTHONPATH`. The training scripts automatically add `src/` to `sys.path` relative to their own location.
-
-### URDF Mesh Not Found
-
-Some URDF files reference mesh paths that differ between Windows and Linux path conventions. The `Evaluation/URDFs/Robots/YASKAWA_GP7/a.py` script resolves these paths automatically.
-
----
-
-## Development Notes
-
-- **No fork-based multiprocessing:** All training uses `DummyVecEnv` (single-process). The `if __name__ == '__main__'` guard is present in all scripts.
-- **Seeding:** All four random sources (Python `random`, NumPy, PyTorch, Gymnasium env) are seeded with `SEED = 42`.
-- **SB3 logger:** Configured with `['stdout', 'csv']` + optional `'tensorboard'`.
-- **HER variants** (DDPG_HER, SAC_HER, TD3_HER) are referenced in data paths and comparison scripts but the training scripts do not yet exist on disk.
-- **Success threshold:** Throughout the codebase, `distance < 0.01` (1 cm) is used as the success criterion.
-
----
-
-## Suggested Improvements
-
-- Add HER (Hindsight Experience Replay) training scripts using SB3's `HerReplayBuffer`.
-- Replace hardcoded `device='cuda'` with `torch.cuda.is_available()` check.
-- Use `pathlib.Path` consistently for all path operations instead of `os.getcwd().split()`.
-- Add automated pytest tests using `stable_baselines3.common.env_checker.check_env`.
-
----
-
-## License
-
-MIT License — Copyright (c) 2024 Roman Parak
+- URDF và mesh là asset cần thiết để mô phỏng, nên commit lên Git.
+- `venv`, `__pycache__`, model `.zip`, replay buffer `.pkl`, TensorBoard events và log training không nên commit.
+- Nếu PyBullet báo lỗi không tìm thấy mesh, kiểm tra lại path trong URDF và vị trí file trong `URDFs/Robots/<ROBOT_NAME>/Mesh`.
+- Các script hiện tại vẫn ưu tiên `YASKAWA_GP7`; nếu muốn dùng `ARM` trong training, cần cập nhật phần chọn robot/URDF trong code load robot.

@@ -94,9 +94,15 @@ def Get_Environment_Structure(name: str, Env_ID: int) -> PyBullet.Configuration.
         assert Env_ID in [0, 1]
 
         if Env_ID == 0:
-            return {'YASKAWA_GP7': PyBullet.Configuration.Environment.YASKAWA_GP7_Env_ID_0_Str }[name]
+            return {
+                'YASKAWA_GP7': PyBullet.Configuration.Environment.YASKAWA_GP7_Env_ID_0_Str,
+                'ARM': PyBullet.Configuration.Environment.ARM_Env_ID_0_Str,
+            }[name]
         else:
-            return {'YASKAWA_GP7': PyBullet.Configuration.Environment.YASKAWA_GP7_Env_ID_1_Str }[name]
+            return {
+                'YASKAWA_GP7': PyBullet.Configuration.Environment.YASKAWA_GP7_Env_ID_1_Str,
+                'ARM': PyBullet.Configuration.Environment.ARM_Env_ID_1_Str,
+            }[name]
     
     except AssertionError as error:
         print(f'[ERROR] Information: {error}')
@@ -124,10 +130,16 @@ def Get_Robot_Structure_Theta_Home(name: str, Env_ID: int) -> tp.List[float]:
         assert Env_ID in [0, 1]
 
         if Env_ID == 0:
-            return {'YASKAWA_GP7': Mathematics.Degree_To_Radian(np.array([-43.32, 6.88, -26.96, 0.0,-56.16, 43.32], dtype=np.float64))}[name]
+            return {
+                'YASKAWA_GP7': Mathematics.Degree_To_Radian(np.array([-43.32, 6.88, -26.96, 0.0,-56.16, 43.32], dtype=np.float64)),
+                'ARM': np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=np.float64),
+            }[name]
             # return {'YASKAWA_GP7': Mathematics.Degree_To_Radian(np.array([0, 0, 0, 0.0,-90, 0], dtype=np.float64))}[name]
         else:
-            return {'YASKAWA_GP7': Mathematics.Degree_To_Radian(np.array([-43.32, 6.88, -26.96, 0.0,-56.16, 43.32], dtype=np.float64))}[name]
+            return {
+                'YASKAWA_GP7': Mathematics.Degree_To_Radian(np.array([-43.32, 6.88, -26.96, 0.0,-56.16, 43.32], dtype=np.float64)),
+                'ARM': np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], dtype=np.float64),
+            }[name]
     
     except AssertionError as error:
         print(f'[ERROR] Information: {error}')

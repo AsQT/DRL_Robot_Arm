@@ -242,3 +242,47 @@ YASKAWA_GP7_Env_ID_1_Str.Scene_Objects = [
         Enable_Collision=False,
     )
 ]
+
+
+# ARM - Env_ID 0 (Default)
+ARM_Env_ID_0_Str = Environment_Str(Name='ARM')
+ARM_Env_ID_0_Str.C.Search = Cuboid_Str(
+    HTM_Cls(None, np.float64).Translation(np.array([0.20, 0.00, 0.35], dtype=np.float64)),
+    np.array([0.60, 0.60, 0.45], dtype=np.float64),
+    [1.0, 0.984, 0.0],
+)
+ARM_Env_ID_0_Str.C.Target = Cuboid_Str(
+    HTM_Cls(None, np.float64).Translation(np.array([0.28, 0.00, 0.32], dtype=np.float64)),
+    np.array([0.24, 0.24, 0.16], dtype=np.float64),
+    [0.0, 1.0, 0.0],
+)
+ARM_Env_ID_0_Str.Collision_Object = None
+ARM_Env_ID_0_Str.Scene_Objects = [
+    Scene_Object_Str(
+        Name='Table',
+        URDF_Relative_Path='URDFs/Primitives/Table/Table.URDF',
+        T=HTM_Cls(None, np.float64).Translation(np.array([0.030, -0.550, 0.180], dtype=np.float64)),
+        Scale=1.0,
+        Color=[0.5, 0.5, 0.5, 1.0],
+        Enable_Collision=False,
+    )
+]
+
+
+# ARM - Env_ID 1 (Collision-Free)
+ARM_Env_ID_1_Str = Environment_Str(Name='ARM')
+ARM_Env_ID_1_Str.C.Search = Cuboid_Str(
+    HTM_Cls(None, np.float64).Translation(np.array([0.20, 0.00, 0.35], dtype=np.float64)),
+    np.array([0.60, 0.60, 0.45], dtype=np.float64),
+    [1.0, 0.984, 0.0],
+)
+ARM_Env_ID_1_Str.C.Target = Cuboid_Str(
+    HTM_Cls(None, np.float64).Translation(np.array([0.28, 0.00, 0.32], dtype=np.float64)),
+    np.array([0.24, 0.24, 0.16], dtype=np.float64),
+    [0.0, 1.0, 0.0],
+)
+ARM_Env_ID_1_Str.Collision_Object.T = HTM_Cls(None, np.float64).Translation([0.24, 0.00, 0.28])
+ARM_Env_ID_1_Str.Collision_Object.Scale = 1.0
+ARM_Env_ID_1_Str.Collision_Object.Color = [0.85, 0.60, 0.60, 0.75]
+ARM_Env_ID_1_Str.Collision_Object.Type = 'Cube100'
+ARM_Env_ID_1_Str.Scene_Objects = ARM_Env_ID_0_Str.Scene_Objects
