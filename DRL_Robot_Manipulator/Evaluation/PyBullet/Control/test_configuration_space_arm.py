@@ -26,31 +26,24 @@ import PyBullet.Utilities
 # =============================================================================
 CONST_ROBOT_NAME = 'ARM'
 CONST_URDF_PATH = PROJECT_ROOT / 'URDFs' / 'Robots' / CONST_ROBOT_NAME / f'{CONST_ROBOT_NAME}.urdf'
-CONST_TABLE_URDF_PATH = PROJECT_ROOT / 'URDFs' / 'Primitives' / 'Table' / 'Table.URDF'
 CONST_TCP_LINK_NAME = 'tcp_link'
 
 CONST_PYBULLET_ENV_PROPERTIES = {
     'Enable_GUI': True,
     'fps': 100,
-    'Camera': {
-        'Yaw': 70.0,
-        'Pitch': -32.0,
-        'Distance': 1.3,
-        'Position': [0.05, -0.10, 0.25],
-    },
 }
 
 # ARM target/search spaces. Adjust these if your physical setup uses a different
 # table height or target region.
 CONST_C_SPACES = {
     'Search': {
-        'center': np.array([0.20, 0.00, 0.35], dtype=np.float64),
-        'size': np.array([0.60, 0.60, 0.45], dtype=np.float64),
+        'center': np.array([0.20, 0.00, 0.3], dtype=np.float64),
+        'size': np.array([0.25, 0.40, 0.6], dtype=np.float64),
         'color': [1.0, 0.984, 0.0],
     },
     'Target': {
-        'center': np.array([0.28, 0.00, 0.32], dtype=np.float64),
-        'size': np.array([0.24, 0.24, 0.16], dtype=np.float64),
+        'center': np.array([0.20, 0.00, 0.1], dtype=np.float64),
+        'size': np.array([0.25, 0.4, 0.2], dtype=np.float64),
         'color': [0.0, 1.0, 0.0],
     },
 }
@@ -224,23 +217,6 @@ def main():
     pb.setGravity(0.0, 0.0, -9.81)
     pb.loadURDF('plane.urdf')
 
-    camera = CONST_PYBULLET_ENV_PROPERTIES['Camera']
-    pb.resetDebugVisualizerCamera(
-        cameraDistance=camera['Distance'],
-        cameraYaw=camera['Yaw'],
-        cameraPitch=camera['Pitch'],
-        cameraTargetPosition=camera['Position'],
-    )
-
-    if CONST_TABLE_URDF_PATH.exists():
-        table_id = pb.loadURDF(
-            str(CONST_TABLE_URDF_PATH),
-            basePosition=[0.030, -0.550, 0.180],
-            baseOrientation=[0, 0, 0, 1],
-            useFixedBase=True,
-        )
-        pb.setCollisionFilterGroupMask(table_id, -1, 0, 0)
-
     robot_id = pb.loadURDF(str(CONST_URDF_PATH), useFixedBase=True, flags=pb.URDF_ENABLE_CACHED_GRAPHICS_SHAPES)
     ghost_id = pb.loadURDF(str(CONST_URDF_PATH), useFixedBase=True, flags=pb.URDF_ENABLE_CACHED_GRAPHICS_SHAPES)
 
@@ -252,7 +228,7 @@ def main():
         raise RuntimeError(f'Cannot find TCP link "{CONST_TCP_LINK_NAME}" in {CONST_URDF_PATH}')
 
     for i in range(-1, pb.getNumJoints(robot_id)):
-        pb.changeVisualShape(robot_id, i, rgbaColor=[0.0, 0.0, 0.8, 1.0])
+        pb.changeVisualShape(robot_id, i, rgbaColor=[0.72, 0.74, 0.76, 1.0])
     for i in range(-1, pb.getNumJoints(ghost_id)):
         pb.setCollisionFilterGroupMask(ghost_id, i, 0, 0)
     set_ghost_visibility(ghost_id, not args.no_ghost)
@@ -357,14 +333,10 @@ def main():
 
     if enable_gui:
         print()
-        print('Test complete. GUI remains open. Press Ctrl+C to exit.')
-        try:
-            while pb.isConnected():
-                time.sleep(1.0)
-        except KeyboardInterrupt:
-            pass
+        print('Test complete. Closing GUI.')
 
-    pb.disconnect()
+    if pb.isConnected():
+        pb.disconnect()
 
 
 if __name__ == '__main__':

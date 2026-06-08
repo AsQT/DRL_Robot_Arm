@@ -46,8 +46,8 @@ start:
   mode: random              # fixed | random
   fixed_position: [0.35, -0.33, 0.10]
   random_bounds:
-    min: [0.4250, -0.200, 0.02]
-    max: [0.675, 0.200, 0.600]
+    min: [0.30, -0.75, 0.10]
+    max: [0.45, -0.385, 0.20]
 
 # ---------------------------------------------------------------------------
 # Target region — shared by all algorithms
@@ -56,8 +56,8 @@ target:
   mode: random             # fixed | random
   fixed_position: [0.030, -0.535, 0.10]
   random_bounds:
-    min: [0.4250, -0.200, 0.02]
-    max: [0.675, 0.200, 0.10]
+    min: [-0.135, -0.715, 0.1]
+    max: [0.03, -0.385, 0.20]
 
 # ---------------------------------------------------------------------------
 # Obstacle / Box — shared by all algorithms
