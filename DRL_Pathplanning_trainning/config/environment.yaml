@@ -44,7 +44,7 @@ workspace:
 # ---------------------------------------------------------------------------
 start:
   mode: random              # fixed | random
-  fixed_position: [0.35, -0.33, 0.10]
+  fixed_position: [0.55, 0.00, 0.30]
   random_bounds:
     min: [0.4250, -0.200, 0.02]
     max: [0.675, 0.200, 0.600]
@@ -54,7 +54,7 @@ start:
 # ---------------------------------------------------------------------------
 target:
   mode: random             # fixed | random
-  fixed_position: [0.030, -0.535, 0.10]
+  fixed_position: [0.55, 0.00, 0.10]
   random_bounds:
     min: [0.4250, -0.200, 0.02]
     max: [0.675, 0.200, 0.10]

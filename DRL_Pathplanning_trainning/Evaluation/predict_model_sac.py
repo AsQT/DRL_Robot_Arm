@@ -51,6 +51,22 @@ CUSTOM_MODEL_ZIP = ""
 # --------------------------------------------------------------------------- #
 
 
+def _latest_run_with_model(base_dir: Path) -> Path:
+    """Return the newest run directory that contains a known model zip."""
+    if not base_dir.exists():
+        return base_dir
+
+    run_dirs = sorted(
+        (p for p in base_dir.iterdir() if p.is_dir() and p.name.startswith("run_")),
+        key=lambda p: p.name,
+        reverse=True,
+    )
+    for run_dir in run_dirs:
+        if resolve_model_path(run_dir, CUSTOM_MODEL_ZIP) is not None:
+            return run_dir
+    return base_dir
+
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=f"Evaluate a trained {ALGORITHM} model",
@@ -61,7 +77,7 @@ def _parse_args() -> argparse.Namespace:
     if args.config is None:
         args.config = DEFAULT_CONFIG_PATH
     if args.run is None:
-        args.run = str(DEFAULT_RUN_DIR)
+        args.run = str(_latest_run_with_model(DEFAULT_RUN_DIR))
 
     return args
 
