@@ -32,48 +32,48 @@ environment:
 # Workspace / search region — shared by all algorithms
 # ---------------------------------------------------------------------------
 workspace:
-  x_min: 0.4250
-  x_max: 0.675
-  y_min: -0.200
-  y_max: 0.200
+  x_min: 0.25
+  x_max: 0.5
+  y_min: -0.15
+  y_max: 0.15
   z_min: 0.02
-  z_max: 0.600
+  z_max: 0.3
 
 # ---------------------------------------------------------------------------
 # Start position — shared by all algorithms
 # ---------------------------------------------------------------------------
 start:
   mode: random              # fixed | random
-  fixed_position: [0.55, 0.00, 0.30]
+  fixed_position: [0.30, 0.00, 0.30]
   random_bounds:
-    min: [0.4250, -0.200, 0.02]
-    max: [0.675, 0.200, 0.600]
+    min: [0.25, -0.15, 0.02]
+    max: [0.5, 0.15, 0.30]
 
 # ---------------------------------------------------------------------------
 # Target region — shared by all algorithms
 # ---------------------------------------------------------------------------
 target:
   mode: random             # fixed | random
-  fixed_position: [0.55, 0.00, 0.10]
+  fixed_position: [0.30, 0.00, 0.10]
   random_bounds:
-    min: [0.4250, -0.200, 0.02]
-    max: [0.675, 0.200, 0.10]
+    min: [0.25, -0.15, 0.02]
+    max: [0.5, 0.15, 0.15]
 
 # ---------------------------------------------------------------------------
 # Obstacle / Box — shared by all algorithms
 # ---------------------------------------------------------------------------
 obstacle:
-  enabled: false        # true=include box obstacle in environment
+  enabled: true        # true=include box obstacle in environment
   mode: random          # fixed | random
   name: small_obstacle
   type: box
-  center: [0.1450, -0.550, 0.080]
+  center: [0.375, 0.000, 0.080]
   size: [0.100, 0.100, 0.100]
   safety_margin: 0.03
 
   random_bounds:
-    min: [0.060, -0.685, 0.080]
-    max: [0.170, -0.415, 0.080]
+    min: [0.28, -0.10, 0.080]
+    max: [0.42, 0.10, 0.080]
 
   size_random:
     enabled: true
@@ -116,7 +116,7 @@ termination:
 # Fixed table — shared by all algorithms
 # ---------------------------------------------------------------------------
 table:
-  enabled: true
+  enabled: false
   name: table
   type: box
   center: [0.030, -0.550, -0.150]
@@ -186,8 +186,8 @@ visualization:
 # Training configuration — shared by all algorithms
 # ---------------------------------------------------------------------------
 training:
-  algorithm: TD3           # overridden by each script (not used for selection here)
-  total_timesteps: 10000000
+  algorithm: SAC           # overridden by each script (not used for selection here)
+  total_timesteps: 5000000
   seed: 42
   device: cuda
   n_envs: 30
