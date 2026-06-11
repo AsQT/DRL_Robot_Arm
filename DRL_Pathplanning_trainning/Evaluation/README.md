@@ -44,7 +44,7 @@ Day la script kiem tra moi truong quan trong nhat truoc khi train. No:
 Lenh co ban:
 
 ```powershell
-& ..\venv\Scripts\python.exe .\Evaluation\test_environment_start_to_target.py --config .\config\environment.yaml --episodes 10 --steps 50 --gui false --show false
+& ..\venv\Scripts\python.exe .\Evaluation\test_environment_start_to_target.py --config .\config\environment.yaml --episodes 10 --steps 50 --gui true --show false
 ```
 
 Lenh nay rat hop de tra loi 3 cau hoi:

@@ -127,7 +127,7 @@ table:
 # Ground plane — shared by all algorithms
 # ---------------------------------------------------------------------------
 plane:
-  enabled: true
+  enabled: false
   z: -0.330
   center: [0.150, -0.350, -0.330]
   size: [1.0, 1.0]

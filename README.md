@@ -129,3 +129,10 @@ Các file source code, config, README, URDF, mesh và texture cần để chạy
 - Xem README riêng trong từng project để biết chi tiết hơn về architecture, config và cách chạy.
 - Nếu train bằng GPU, cần cài đúng bản PyTorch CUDA phù hợp với máy.
 - Các output trong `Data/Training` và `Data/Prediction` thường là kết quả thực nghiệm; chỉ commit khi cần lưu kết quả báo cáo hoặc demo.
+
+
+Từ repo root C:\Users\MinhQuang\DRL:
+& .\venv\Scripts\python.exe .\DRL_Pathplanning_trainning\Evaluation\test_environment_start_to_target.py --config .\DRL_Pathplanning_trainning\config\environment.yaml --episodes 3 --steps 50 --gui true --show false
+Hoặc vào đúng thư mục project trước:
+cd .\DRL_Pathplanning_trainning
+& ..\venv\Scripts\python.exe .\Evaluation\test_environment_start_to_target.py --config .\config\environment.yaml --episodes 3 --steps 50 --gui false --show false
