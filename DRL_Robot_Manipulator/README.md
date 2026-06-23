@@ -95,35 +95,38 @@ File chính:
 
 `ARM.urdf` đã được chuyển sang URDF thuần để PyBullet có thể load trực tiếp, không cần xacro.
 
-## Cài đặt
+## Cài đặt trong VS Code Terminal
 
-Tạo môi trường:
+Chỉ dùng terminal tích hợp của VS Code, profile **PowerShell**. Dùng chung virtual environment ở repo root `C:\Users\MinhQuang\DRL\.venv`.
+
+Tạo và kích hoạt môi trường:
 
 ```powershell
-cd DRL_Robot_Manipulator
+cd C:\Users\MinhQuang\DRL
 python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 ```
 
-Kích hoạt môi trường:
+Nếu terminal đang ở thư mục project:
 
-| Terminal | Lệnh |
-|---|---|
-| PowerShell | `.\.venv\Scripts\Activate.ps1` |
-| CMD | `.venv\Scripts\activate.bat` |
-| Git Bash | `source .venv/Scripts/activate` |
-| Linux/macOS | `source .venv/bin/activate` |
+```powershell
+cd C:\Users\MinhQuang\DRL\DRL_Robot_Manipulator
+..\.venv\Scripts\Activate.ps1
+```
 
 Cài dependency:
 
 ```powershell
-pip install -r requirements.txt
+cd C:\Users\MinhQuang\DRL
+.\.venv\Scripts\Activate.ps1
+pip install -r .\DRL_Robot_Manipulator\requirements.txt
 ```
 
 Nếu cần GPU, cài PyTorch CUDA trước khi cài các package còn lại:
 
 ```powershell
 pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu121
-pip install -r requirements.txt
+pip install -r .\DRL_Robot_Manipulator\requirements.txt
 ```
 
 Kiểm tra dependency:
@@ -230,6 +233,6 @@ python Evaluation\PyBullet\Control\test_configuration_space_vertices_arm.py --he
 ## Ghi chú phát triển
 
 - URDF và mesh là asset cần thiết để mô phỏng, nên commit lên Git.
-- `venv`, `__pycache__`, model `.zip`, replay buffer `.pkl`, TensorBoard events và log training không nên commit.
+- `.venv`, `venv`, `__pycache__`, model `.zip`, replay buffer `.pkl`, TensorBoard events và log training không nên commit.
 - Nếu PyBullet báo lỗi không tìm thấy mesh, kiểm tra lại path trong URDF và vị trí file trong `URDFs/Robots/<ROBOT_NAME>/Mesh`.
 - Các script hiện tại vẫn ưu tiên `YASKAWA_GP7`; nếu muốn dùng `ARM` trong training, cần cập nhật phần chọn robot/URDF trong code load robot.

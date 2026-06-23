@@ -13,6 +13,7 @@ For GPU training, set ``training.device: cuda`` in the config YAML.
 import argparse
 import sys
 from pathlib import Path
+import torch
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 _SRC_DIR = _SCRIPT_DIR.parent / "src"
@@ -89,6 +90,11 @@ def _parse_args() -> argparse.Namespace:
 def main() -> None:
     args = _parse_args()
     cfg = load_config(args.config)
+    if torch.cuda.is_available():
+        torch.set_float32_matmul_precision("high")
+        print(f"[INFO] CUDA available: {torch.cuda.get_device_name(0)}")
+    else:
+        print("[WARN] CUDA not available, training will use CPU")
 
     # Script dictates algorithm, overriding whatever is in the YAML
     script_algo = "SAC"

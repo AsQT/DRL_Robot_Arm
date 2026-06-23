@@ -8,7 +8,7 @@ Repository này gồm hai project Deep Reinforcement Learning liên quan đến 
 DRL/
 ├── DRL_Pathplanning_trainning/   # Project 1: huấn luyện path planning dạng điểm trong không gian Cartesian
 ├── DRL_Robot_Manipulator/        # Project 2: huấn luyện robot manipulator trong PyBullet
-├── requirements.txt              # Dependency chung ở root, nếu cần
+├── .venv/                        # Virtual environment dùng chung khi chạy trong VS Code Terminal
 └── .gitignore                    # Bỏ qua venv, cache Python, model/log training
 ```
 
@@ -34,9 +34,10 @@ Các thành phần chính:
 Chạy train ví dụ:
 
 ```powershell
-cd DRL_Pathplanning_trainning
-python -m venv venv
-.venv\Scripts\Activate.ps1
+cd C:\Users\MinhQuang\DRL
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+cd .\DRL_Pathplanning_trainning
 pip install -r requirements.txt
 python Training\train_ddpg.py --config config\environment.yaml
 ```
@@ -66,9 +67,10 @@ Các thành phần chính:
 Chạy train ví dụ:
 
 ```powershell
-cd DRL_Robot_Manipulator
+cd C:\Users\MinhQuang\DRL
 python -m venv .venv
-.venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1
+cd .\DRL_Robot_Manipulator
 pip install -r requirements.txt
 python Training\train_ddpg_gp7.py
 ```
@@ -85,32 +87,34 @@ python Training\train_ddpg_gp7.py
 | Output | Waypoint/path | Model điều khiển robot, log, prediction |
 | Thuật toán | DDPG, SAC, TD3 | DDPG, SAC, TD3 |
 
-## Cài đặt chung
+## Cài đặt chung trong VS Code Terminal
 
-Nên tạo virtual environment riêng và không push thư mục môi trường ảo lên Git.
+Chỉ dùng terminal tích hợp của VS Code, chọn profile **PowerShell**. Môi trường ảo thống nhất nằm ở repo root:
+`C:\Users\MinhQuang\DRL\.venv`.
 
-Tạo môi trường:
+Tạo và kích hoạt môi trường:
 
 ```powershell
+cd C:\Users\MinhQuang\DRL
 python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 ```
 
-Kích hoạt môi trường:
-
-| Terminal | Lệnh |
-|---|---|
-| PowerShell | `.\venv\Scripts\Activate.ps1` |
-| CMD | `venv\Scripts\activate.bat` |
-| Git Bash | `source venv/Scripts/activate` |
-| Linux/macOS | `source venv/bin/activate` |
-
-Cài dependency:
+Nếu terminal đang đứng trong thư mục con, kích hoạt bằng đường dẫn tương đối về repo root:
 
 ```powershell
-pip install -r requirements.txt
+cd C:\Users\MinhQuang\DRL\DRL_Pathplanning_trainning
+..\.venv\Scripts\Activate.ps1
 ```
 
-Nếu từng project có `requirements.txt` riêng, nên cài dependency trong đúng thư mục project đó để tránh thiếu package.
+Cài dependency theo project cần chạy:
+
+```powershell
+cd C:\Users\MinhQuang\DRL
+.\.venv\Scripts\Activate.ps1
+pip install -r .\DRL_Pathplanning_trainning\requirements.txt
+pip install -r .\DRL_Robot_Manipulator\requirements.txt
+```
 
 ## Những file không nên push
 
@@ -131,8 +135,10 @@ Các file source code, config, README, URDF, mesh và texture cần để chạy
 - Các output trong `Data/Training` và `Data/Prediction` thường là kết quả thực nghiệm; chỉ commit khi cần lưu kết quả báo cáo hoặc demo.
 
 
-Từ repo root C:\Users\MinhQuang\DRL:
-& .\venv\Scripts\python.exe .\DRL_Pathplanning_trainning\Evaluation\test_environment_start_to_target.py --config .\DRL_Pathplanning_trainning\config\environment.yaml --episodes 3 --steps 50 --gui true --show false
-Hoặc vào đúng thư mục project trước:
-cd .\DRL_Pathplanning_trainning
-& ..\venv\Scripts\python.exe .\Evaluation\test_environment_start_to_target.py --config .\config\environment.yaml --episodes 3 --steps 50 --gui false --show false
+Ví dụ kiểm tra nhanh từ VS Code Terminal:
+
+```powershell
+cd C:\Users\MinhQuang\DRL
+.\.venv\Scripts\Activate.ps1
+python .\DRL_Pathplanning_trainning\Evaluation\test_environment_start_to_target.py --config .\DRL_Pathplanning_trainning\config\environment.yaml --episodes 3 --steps 50 --gui true --show false
+```

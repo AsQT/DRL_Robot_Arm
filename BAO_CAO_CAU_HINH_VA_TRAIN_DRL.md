@@ -15,7 +15,7 @@ Thu muc goc repository:
 cd C:\Users\MinhQuang\DRL
 ```
 
-Nen dung mot virtual environment rieng cho tung project hoac dung `.venv` o root:
+Chi dung VS Code Terminal tren Windows, profile PowerShell. Dung chung virtual environment `.venv` o repo root:
 
 ```powershell
 python -m venv .venv
@@ -23,13 +23,7 @@ python -m venv .venv
 python -m pip install --upgrade pip
 ```
 
-Co the cai dependency chung tu root:
-
-```powershell
-pip install -r requirements.txt
-```
-
-Hoac cai rieng cho tung project:
+Cai dependency theo project can chay:
 
 ```powershell
 pip install -r DRL_Pathplanning_trainning\requirements.txt
@@ -354,23 +348,12 @@ Chi TD3 va DDPG dung `action_noise`. SAC va PPO bo qua phan nay.
 
 ### 2.4 Cach train tu dau
 
-Chay tu thu muc project:
+Mo VS Code Terminal, kich hoat `.venv` o repo root roi vao thu muc project:
 
 ```powershell
-cd C:\Users\MinhQuang\DRL\DRL_Pathplanning_trainning
-..\.venv\Scripts\Activate.ps1
-```
-
-Neu dung `.venv` o root, lenh activate dung:
-
-```powershell
-..\.venv\Scripts\Activate.ps1
-```
-
-Neu PowerShell khong chap nhan do khoang trang, dung duong dan ro:
-
-```powershell
-C:\Users\MinhQuang\DRL\.venv\Scripts\Activate.ps1
+cd C:\Users\MinhQuang\DRL
+.\.venv\Scripts\Activate.ps1
+cd .\DRL_Pathplanning_trainning
 ```
 
 Train TD3:
@@ -413,7 +396,7 @@ Khuyen nghi:
 
 - Train dai: `--gui false`, `progress_bar true`, `n_envs` tuy CPU.
 - Debug hinh hoc: `--gui true`, `n_envs=1`.
-- Windows voi `n_envs>1` dung spawn, co the cham hon Linux. Neu gap loi multiprocessing, dat `training.n_envs: 1`.
+- Neu gap loi multiprocessing tren Windows, dat `training.n_envs: 1`.
 
 ### 2.5 Output train
 
@@ -764,11 +747,12 @@ Khuyen nghi khi train dai:
 
 ### 3.7 Cach train robot manipulator tu dau
 
-Chay tu thu muc project:
+Mo VS Code Terminal, kich hoat `.venv` o repo root roi vao thu muc project:
 
 ```powershell
-cd C:\Users\MinhQuang\DRL\DRL_Robot_Manipulator
-C:\Users\MinhQuang\DRL\.venv\Scripts\Activate.ps1
+cd C:\Users\MinhQuang\DRL
+.\.venv\Scripts\Activate.ps1
+cd .\DRL_Robot_Manipulator
 ```
 
 Train DDPG Default cho GP7:
@@ -996,7 +980,7 @@ Repo da co `.gitignore` cho cac nhom output nay. Neu mot file binary da tracked 
 
 ## 6. Checklist train lai tu dau
 
-1. Activate venv.
+1. Activate `.venv` trong VS Code Terminal PowerShell.
 2. Cai dependency dung project.
 3. Chon project can train.
 4. Chinh config:

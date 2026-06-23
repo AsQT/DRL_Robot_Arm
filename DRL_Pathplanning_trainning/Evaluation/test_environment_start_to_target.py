@@ -588,7 +588,7 @@ def main() -> int:
             show_labels=True,
             show_workspace=True,
             show_target_region=True,
-            show_table=True,
+            show_table=False,  # Table is large and can obscure obstacle in some views, so hide it by default
             hide_debug_ui=True,
         )
         viewer = FrameViewer.from_scene(scene)

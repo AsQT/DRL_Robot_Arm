@@ -1,0 +1,2 @@
+[2026-06-12 02:08:38 +07:00] Watcher started. PIDs=28316, 31888 Deadline=06/12/2026 06:30:00
+[2026-06-12 02:08:38 +07:00] Watcher exception: Cannot overwrite variable PID because it is read-only or constant.

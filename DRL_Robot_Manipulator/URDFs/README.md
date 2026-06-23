@@ -64,7 +64,9 @@ src/PyBullet/Utilities.py
 Kiem tra vertices target space:
 
 ```powershell
-.\venv\Scripts\python.exe .\DRL_Robot_Manipulator\Evaluation\PyBullet\Control\test_configuration_space_vertices_arm.py --headless --sleep 0
+cd C:\Users\MinhQuang\DRL
+.\.venv\Scripts\Activate.ps1
+python .\DRL_Robot_Manipulator\Evaluation\PyBullet\Control\test_configuration_space_vertices_arm.py --headless --sleep 0
 ```
 
 Ket qua gan day:
@@ -126,7 +128,9 @@ Thu muc `Primitives` chua cac vat the co ban dung trong simulation.
 ## Kiem tra nhanh URDF ARM
 
 ```powershell
-.\venv\Scripts\python.exe -c "import pybullet as p; p.connect(p.DIRECT); r=p.loadURDF(r'DRL_Robot_Manipulator/URDFs/Robots/ARM/ARM.urdf', useFixedBase=True); print(p.getNumJoints(r)); p.disconnect()"
+cd C:\Users\MinhQuang\DRL
+.\.venv\Scripts\Activate.ps1
+python -c "import pybullet as p; p.connect(p.DIRECT); r=p.loadURDF(r'DRL_Robot_Manipulator/URDFs/Robots/ARM/ARM.urdf', useFixedBase=True); print(p.getNumJoints(r)); p.disconnect()"
 ```
 
 Ket qua mong doi:

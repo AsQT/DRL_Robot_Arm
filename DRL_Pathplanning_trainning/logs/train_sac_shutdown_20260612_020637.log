@@ -1,0 +1,3 @@
+[2026-06-12 02:06:38 +07:00] Wrapper started. Deadline = 06/12/2026 06:30:00
+[2026-06-12 02:06:38 +07:00] Training command: C:\Users\MinhQuang\DRL\venv\Scripts\python.exe C:\Users\MinhQuang\DRL\DRL_Pathplanning_trainning\Training\train_sac.py --config C:\Users\MinhQuang\DRL\DRL_Pathplanning_trainning\config\environment.yaml --gui false --show false
+[2026-06-12 02:06:39 +07:00] Wrapper exception: pybullet build time: Jun  4 2026 18:21:56
